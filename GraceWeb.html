@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>School Website</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    margin: 0;
+    background-color: #2f2f2f;
+    color: white;
+}
+
+/* Top bar */
+.top-bar {
+    background-color: #3a3a3a;
+    padding: 15px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    border-bottom: 5px solid #1f1f1f;
+}
+
+/* Layout */
+.container {
+    display: flex;
+    height: calc(100vh - 70px);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    background-color: #1f1f1f;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.side-button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #000;
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.side-button:hover {
+    background-color: #333;
+}
+
+/* Main */
+.main {
+    flex: 1;
+    padding: 30px;
+    background-color: #3b3b3b;
+}
+
+/* Hide pages */
+.page {
+    display: none;
+}
+
+.active {
+    display: block;
+}
+
+/* Game buttons */
+.game-buttons {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.game-button {
+    padding: 18px 28px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 25px;
+    text-decoration: none;
+    color: white;
+    border: 4px solid black;
+}
+
+.game-button:hover {
+    filter: brightness(1.15);
+}
+
+/* Colors */
+.totally-science { background-color: #7a1fa2; }
+.unblocked7 { background-color: #0b3c6f; }
+.quackprep { background-color: #2e8b00; }
+.gnmath { background-color: #b00000; }
+.slope3 { background: linear-gradient(to right, #4cc9f0, #b5179e); }
+
+/* Home text */
+.home-text {
+    text-align: center;
+    font-size: 22px;
+    max-width: 700px;
+    margin: auto;
+}
+
+.big-green {
+    color: #39ff14;
+    font-size: 40px;
+    margin-top: 100px;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top-bar">
+    School Website
+</div>
+
+<div class="container">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Buttons:</h2>
+
+        <div class="side-button" onclick="showPage('home')">
+            Home
+        </div>
+
+        <div class="side-button" onclick="showPage('games')">
+            Unblocked Games
+        </div>
+
+        <div class="side-button">
+            Ais
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- HOME PAGE -->
+        <div id="home" class="page active">
+            <h1>Home:</h1>
+
+            <div class="home-text">
+                Welcome to school Website. A website with unblocked games and others.
+                The website tries to get up to date. if any games get blocked then it
+                will get removed.
+            </div>
+
+            <div class="big-green">
+                This website is made for Grace
+            </div>
+        </div>
+
+        <!-- GAMES PAGE -->
+        <div id="games" class="page">
+            <h1>Unblocked Games:</h1>
+
+            <div class="game-buttons">
+
+                <a class="game-button totally-science"
+                   href="http://d11jzht7mj96rr.cloudfront.net"
+                   target="_blank">
+                    Totally Science
+                </a>
+
+                <a class="game-button unblocked7"
+                   href="https://sites.google.com/view/drive-u-7-home/home"
+                   target="_blank">
+                    UnblockedGames 7
+                </a>
+
+                <a class="game-button quackprep"
+                   href="https://d2gve52fz9syn8.cloudfront.net"
+                   target="_blank">
+                    QuackPrep
+                </a>
+
+                <a class="game-button gnmath"
+                   href="https://gn-math-t.github.io"
+                   target="_blank">
+                    Gn Math
+                </a>
+
+                <a class="game-button slope3"
+                   href="https://slope3unblocked.github.io"
+                   target="_blank">
+                    Slope 3
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+
+    document.getElementById(pageId).classList.add('active');
+}
+</script>
+
+</body>
+</html>
