@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>School Website</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: radial-gradient(circle at top left, #2a2a2a, #0f0f0f);
+    color: white;
+}
+
+/* Top bar */
+.top-bar {
+    backdrop-filter: blur(25px) saturate(200%);
+    background: rgba(255,255,255,0.12);
+    padding: 15px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    box-shadow: 0 5px 30px rgba(255,255,255,0.15);
+}
+
+/* Layout */
+.container {
+    display: flex;
+    height: calc(100vh - 70px);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 230px;
+    padding: 20px;
+    backdrop-filter: blur(30px);
+    background: rgba(255,255,255,0.08);
+}
+
+/* Sidebar buttons */
+.side-button {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 20px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.12);
+    transition: 0.3s;
+}
+
+.side-button:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateX(6px);
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+}
+
+/* Main */
+.main {
+    flex: 1;
+    padding: 30px;
+}
+
+/* Pages */
+.page { display: none; }
+.active { display: block; }
+
+/* Glass card */
+.card {
+    backdrop-filter: blur(40px);
+    background: rgba(255,255,255,0.10);
+    border-radius: 28px;
+    padding: 35px;
+    box-shadow:
+        0 15px 60px rgba(0,0,0,0.7),
+        0 0 25px rgba(255,255,255,0.15),
+        inset 0 1px 2px rgba(255,255,255,0.3);
+}
+
+/* Layout */
+.ai-buttons, .game-buttons {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+/* Button */
+.btn {
+    position: relative;
+    padding: 20px 34px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 999px;
+    text-decoration: none;
+    color: white;
+    overflow: hidden;
+
+    backdrop-filter: blur(30px) saturate(200%);
+    background: rgba(255,255,255,0.15);
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.6),
+        0 0 15px rgba(255,255,255,0.25),
+        inset 0 2px 4px rgba(255,255,255,0.4);
+
+    transition: 0.3s;
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 120%;
+    height: 100%;
+    background: linear-gradient(120deg,
+        transparent,
+        rgba(255,255,255,0.8),
+        transparent);
+    transition: 0.7s;
+}
+
+.btn:hover::before {
+    left: 120%;
+}
+
+.btn:hover {
+    transform: scale(1.1);
+    box-shadow:
+        0 15px 50px rgba(0,0,0,0.8),
+        0 0 25px rgba(255,255,255,0.6),
+        0 0 40px rgba(255,255,255,0.3);
+}
+
+/* AI colors */
+.chatgpt {
+    background: linear-gradient(145deg, #ffffff, #cfcfcf);
+    color: black;
+    box-shadow: 0 0 20px rgba(255,255,255,0.8);
+}
+
+.gemini {
+    background: linear-gradient(145deg, #7CFF00, #00FFA6);
+    box-shadow: 0 0 25px #39ff14;
+}
+
+.copilot {
+    background: linear-gradient(145deg, #fff200, #ffb300);
+    color: black;
+    box-shadow: 0 0 25px #ffd000;
+}
+
+.grok {
+    background: linear-gradient(145deg, #ff1a1a, #7a0000);
+    box-shadow: 0 0 25px #ff0000;
+}
+
+/* Game colors */
+.totally-science { background: linear-gradient(45deg, #a855f7, #5b21b6); }
+.unblocked7 { background: linear-gradient(45deg, #1f2937, #3b82f6); }
+.quackprep { background: linear-gradient(45deg, #00ffcc, #00cc66); }
+.gnmath { background: linear-gradient(45deg, #ff0000, #990000); }
+.slope3 { background: linear-gradient(45deg, #4cc9f0, #ff00ff); }
+
+/* Text */
+.home-text {
+    text-align: center;
+    font-size: 22px;
+    max-width: 700px;
+    margin: auto;
+}
+
+.green-text {
+    color: #39ff14;
+    font-size: 42px;
+    text-align: center;
+    margin-top: 80px;
+    text-shadow: 0 0 20px #39ff14;
+}
+
+.red-text {
+    color: red;
+    font-size: 30px;
+    text-align: center;
+    margin-top: 20px;
+    text-shadow: 0 0 15px red;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="top-bar">School Website</div>
+
+<div class="container">
+
+    <div class="sidebar">
+        <div class="side-button" onclick="showPage('home')">Home</div>
+        <div class="side-button" onclick="showPage('games')">Unblocked Games</div>
+        <div class="side-button" onclick="showPage('ai')">Ais</div>
+        <div class="side-button">News</div>
+    </div>
+
+    <div class="main">
+
+        <!-- HOME -->
+        <div id="home" class="page active">
+            <div class="card">
+                <h1>Home:</h1>
+
+                <div class="home-text">
+                    Welcome to school Website. A website with unblocked games and others.
+                    The website tries to get up to date. if any games get blocked then it
+                    will get removed.
+                </div>
+
+                <div class="green-text">
+                    This website is made for Grace
+                </div>
+
+                <div class="red-text">
+                    updated: 3/04/26
+                </div>
+            </div>
+        </div>
+
+        <!-- GAMES -->
+        <div id="games" class="page">
+            <div class="card">
+                <h1>Unblocked Games:</h1>
+
+                <div class="game-buttons">
+                    <a class="btn totally-science" href="http://d11jzht7mj96rr.cloudfront.net" target="_blank">Totally Science</a>
+                    <a class="btn unblocked7" href="https://sites.google.com/view/drive-u-7-home/home" target="_blank">UnblockedGames 7</a>
+                    <a class="btn quackprep" href="https://d2gve52fz9syn8.cloudfront.net" target="_blank">QuackPrep</a>
+                    <a class="btn gnmath" href="https://gn-math-t.github.io" target="_blank">Gn Math</a>
+                    <a class="btn slope3" href="https://slope3unblocked.github.io" target="_blank">Slope 3</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI -->
+        <div id="ai" class="page">
+            <div class="card">
+                <h1>Ais:</h1>
+
+                <div class="ai-buttons">
+                    <a class="btn chatgpt" href="https://chatgpt.com" target="_blank">Chatgpt</a>
+                    <a class="btn gemini" href="https://gemini.google.com/app" target="_blank">Gemini</a>
+                    <a class="btn copilot" href="https://copilot.microsoft.com/" target="_blank">CoPilot</a>
+                    <a class="btn grok" href="https://grok.com" target="_blank">Grok</a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    document.getElementById(pageId).classList.add('active');
+}
+</script>
+
+</body>
+</html>
