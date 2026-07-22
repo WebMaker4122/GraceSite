@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS • Liquid Glass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&amp;family=SF+Pro+Display:wght@300;400;500;600&amp;display=swap');
+        
+        :root {
+            --macos-bg: #0a0a0f;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+        }
+        
+        .macos-window {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: box-shadow 0.2s cubic-bezier(0.23, 1.0, 0.32, 1);
+        }
+        
+        .macos-window:hover {
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 10px 25px rgba(0, 0, 0, 0.35);
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .menu-bar {
+            background: rgba(15, 15, 20, 0.25);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+        }
+        
+        .dock {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(32px) saturate(180%);
+            -webkit-backdrop-filter: blur(32px) saturate(180%);
+            border-top: 1px solid rgba(255, 255, 255, 0.35);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .macbook-notch {
+            width: 180px;
+            height: 28px;
+            background: #050505;
+            border-radius: 0 0 13px 13px;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        .macbook-notch::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 26px;
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            background: radial-gradient(circle at 35% 35%, #26344a, #090d13 65%);
+            box-shadow: 0 0 2px rgba(74, 114, 170, 0.35);
+        }
+        
+        .dock-icon {
+            position: relative;
+            transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), filter 0.2s ease;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+        }
+
+        .dock-icon::before {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 62px;
+            left: 50%;
+            transform: translate(-50%, 8px);
+            padding: 5px 9px;
+            border-radius: 8px;
+            background: rgba(30, 30, 34, 0.85);
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(18px);
+            color: white;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all .16s ease;
+        }
+
+        .dock-icon:hover::before {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        
+        .dock-icon:hover {
+            transform: scale(1.45) translateY(-10px);
+            filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.6));
+        }
+        
+        .dock-icon:active {
+            transform: scale(1.1) translateY(-4px);
+        }
+        
+        .title-bar {
+            height: 40px;
+            border-radius: 12px 12px 0 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0.04));
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .traffic-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 9999px;
+            transition: all 0.1s ease;
+        }
+        
+        .traffic-light:hover {
+            filter: brightness(1.15);
+        }
+        
+        .macos-desktop {
+            background-image: url('https://media.512pixels.net/wp-content/uploads/2025/06/26-Tahoe-Light-6K-thumb.jpeg?v=4') !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            position: relative;
+        }
+        
+        .macos-desktop::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(0, 0, 0, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(0, 0, 0, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .desktop-icon {
+            transition: all 0.15s cubic-bezier(0.23, 1.0, 0.32, 1);
+        }
+        
+        .desktop-icon:hover {
+            transform: scale(1.08);
+            background-color: rgba(255,255,255,0.06);
+            border-radius: 12px;
+        }
+        
+        .menu-item {
+            transition: background-color 0.1s ease;
+        }
+        
+        .menu-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .window-content {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+        
+        .liquid-highlight {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .liquid-highlight::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -100%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            animation: liquid-shimmer 3s infinite;
+        }
+        
+        @keyframes liquid-shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400%); }
+        }
+        
+        .macos-text {
+            font-feature-settings: "ss02";
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .mac-toggle {
+            width: 36px;
+            height: 21px;
+            border-radius: 9999px;
+            background: rgba(255,255,255,.2);
+            padding: 2px;
+            cursor: pointer;
+            transition: background .18s ease;
+        }
+
+        .mac-toggle::after {
+            content: '';
+            display: block;
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 1px 4px rgba(0,0,0,.35);
+            transition: transform .18s ease;
+        }
+
+        .mac-toggle.on { background: #34c759; }
+        .mac-toggle.on::after { transform: translateX(15px); }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 48px;
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .settings-row:last-child { border-bottom: 0; }
+
+        input[type="range"] { accent-color: #0a84ff; }
+
+        body.light-mode .glass {
+            background: rgba(246, 246, 249, .72);
+            color: #17171a;
+            border-color: rgba(255,255,255,.65);
+        }
+
+        body.light-mode .window-content, body.light-mode .title-bar { color: #17171a; }
+
+        .desktop-context-menu {
+            animation: menu-pop .12s cubic-bezier(.2,.8,.2,1);
+            transform-origin: top left;
+        }
+
+        @keyframes menu-pop {
+            from { opacity: 0; transform: scale(.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-[#0a0a0f] overflow-hidden select-none">
+    <!-- Top Menu Bar -->
+    <div class="fixed top-0 left-0 right-0 h-9 menu-bar z-[100] flex items-center px-3 text-white text-sm">
+        <div class="flex items-center gap-x-1 flex-1">
+            <!-- Apple Logo -->
+            <div onclick="showAppleMenu()" class="flex items-center justify-center w-8 h-8 hover:bg-white/10 rounded-lg cursor-pointer transition-colors">
+                <i class="fa-brands fa-apple text-xl"></i>
+            </div>
+            
+            <!-- Menu Items -->
+            <div class="flex items-center gap-x-1 text-[13px] font-medium">
+                <div onclick="showMenuDropdown(this, 'finder')" class="menu-item px-3 py-1 rounded-md cursor-pointer font-semibold">Finder</div>
+                <div onclick="showMenuDropdown(this, 'file')" class="menu-item px-3 py-1 rounded-md cursor-pointer">File</div>
+                <div onclick="showMenuDropdown(this, 'edit')" class="menu-item px-3 py-1 rounded-md cursor-pointer">Edit</div>
+                <div onclick="showMenuDropdown(this, 'view')" class="menu-item px-3 py-1 rounded-md cursor-pointer">View</div>
+                <div onclick="showMenuDropdown(this, 'go')" class="menu-item px-3 py-1 rounded-md cursor-pointer">Go</div>
+                <div onclick="showMenuDropdown(this, 'window')" class="menu-item px-3 py-1 rounded-md cursor-pointer">Window</div>
+                <div onclick="showMenuDropdown(this, 'help')" class="menu-item px-3 py-1 rounded-md cursor-pointer">Help</div>
+            </div>
+        </div>
+        
+        <!-- Right side controls -->
+        <div class="flex items-center gap-x-4 text-sm pr-2">
+            <!-- WiFi -->
+            <div class="flex items-center gap-x-1.5 cursor-pointer hover:bg-white/10 px-2 py-1 rounded-lg transition-colors">
+                <i class="fa-solid fa-wifi text-base"></i>
+            </div>
+            
+            <!-- Battery -->
+            <div class="flex items-center gap-x-1.5 cursor-pointer hover:bg-white/10 px-2 py-1 rounded-lg transition-colors">
+                <i class="fa-solid fa-battery-full text-base"></i>
+                <span class="text-xs font-medium">87%</span>
+            </div>
+
+            <!-- Spotlight -->
+            <div onclick="showSpotlight()" class="flex items-center cursor-pointer hover:bg-white/10 px-2 py-1 rounded-lg transition-colors" title="Spotlight">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </div>
+            
+            <!-- Control Center -->
+            <div onclick="showControlCenter()" class="flex items-center cursor-pointer hover:bg-white/10 px-2 py-1 rounded-lg transition-colors">
+                <i class="fa-solid fa-sliders-h text-base"></i>
+            </div>
+            
+            <!-- Clock -->
+            <div id="clock" class="font-medium text-[13px] tabular-nums cursor-pointer hover:bg-white/10 px-3 py-1 rounded-lg transition-colors"></div>
+        </div>
+    </div>
+
+    <!-- MacBook Camera Notch -->
+    <div class="macbook-notch fixed top-0 left-1/2 -translate-x-1/2 z-[150] pointer-events-none" aria-hidden="true"></div>
+
+    <!-- Desktop -->
+    <div id="desktop" class="macos-desktop min-h-screen pt-9 pb-24 px-6 relative" 
+         style="background-image: linear-gradient(135deg, #0f172a 0%, #1e1135 50%, #0a0f1e 100%);">
+        <!-- Subtle desktop pattern -->
+        <div class="absolute inset-0 opacity-30 pointer-events-none" 
+             style="background-image: url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill-rule=%22evenodd%22%3E%3Cpath fill=%22%23ffffff%22 fill-opacity=%22004%22 d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-10V8h-2v16h-4v2h4v4h2v-4h4v-2h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 6v-4H4v4H0v2h4v4h2V8h4V6H6z%22/%3E%3C/g%3E%3C/svg%27'); background-size: 60px 60px;"></div>
+
+        <!-- Desktop Icons -->
+        <div class="grid grid-cols-1 gap-y-8 w-20 pt-6">
+            <!-- Finder (Updated to specific URL) -->
+            <div onclick="openApp('finder')" class="desktop-icon flex flex-col items-center gap-y-1.5 p-2 cursor-pointer group">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png" class="w-12 h-12 object-contain drop-shadow" alt="Finder">
+                <span class="text-white text-xs font-medium text-center drop-shadow">Finder</span>
+            </div>
+            <div onclick="openApp('documents')" class="desktop-icon flex flex-col items-center gap-y-1.5 p-2 cursor-pointer group">
+                <div class="w-12 h-12 flex items-center justify-center text-5xl drop-shadow-lg">📄</div>
+                <span class="text-white text-xs font-medium text-center drop-shadow">Documents</span>
+            </div>
+            <div onclick="openApp('downloads')" class="desktop-icon flex flex-col items-center gap-y-1.5 p-2 cursor-pointer group">
+                <div class="w-12 h-12 flex items-center justify-center text-5xl drop-shadow-lg">⬇️</div>
+                <span class="text-white text-xs font-medium text-center drop-shadow">Downloads</span>
+            </div>
+            <div onclick="openApp('games')" class="desktop-icon flex flex-col items-center gap-y-1.5 p-2 cursor-pointer group">
+                <div class="w-12 h-12 flex items-center justify-center text-5xl drop-shadow-lg">🎮</div>
+                <span class="text-white text-xs font-medium text-center drop-shadow">Games</span>
+            </div>
+            <div onclick="openApp('unblockedgames')" class="desktop-icon flex flex-col items-center gap-y-1.5 p-2 cursor-pointer group">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 grid place-items-center shadow-lg text-white text-3xl"><i class="fa-solid fa-gamepad"></i></div>
+                <span class="text-white text-xs font-medium text-center drop-shadow">Unblocked Games</span>
+            </div>
+        </div>
+
+        <!-- Welcome Window -->
+        <div id="welcome-window" class="macos-window absolute left-1/2 top-1/3 -translate-x-1/2 w-[420px] rounded-2xl overflow-hidden glass liquid-highlight z-50">
+            <div class="title-bar h-9 flex items-center px-3 cursor-move" onmousedown="startDrag(event, this.parentElement)">
+                <div class="flex items-center gap-x-2">
+                    <div class="flex items-center gap-x-[6px]">
+                        <div onclick="closeWindow(this)" class="traffic-light bg-[#ff5f57] hover:bg-[#ff4d4d] border border-[#e0443e]"></div>
+                        <div onclick="minimizeWindow(this)" class="traffic-light bg-[#febc2e] hover:bg-[#f5b01e] border border-[#d89c1a]"></div>
+                        <div onclick="maximizeWindow(this)" class="traffic-light bg-[#28c840] hover:bg-[#1eb23a] border border-[#1a9c32]"></div>
+                    </div>
+                    <div class="ml-3 text-white/90 text-sm font-medium">Welcome to new version</div>
+                </div>
+            </div>
+            <div class="p-8 text-white window-content">
+                <div class="flex items-center gap-x-4 mb-6">
+                    <div class="text-6xl">🍎</div>
+                    <div>
+                        <h1 class="text-3xl font-semibold tracking-tight">New Version</h1>
+                        <p class="text-white/60 text-sm">we have changed a lot of things in the website! If you want to play unblocked games just click the app for unblocked games!</p>
+                    </div>
+                </div>
+                <div class="mt-8 flex gap-3">
+                    <button onclick="openApp('finder'); closeWindow(this)" class="flex-1 bg-white/10 hover:bg-white/15 active:bg-white/20 transition-all text-white font-medium py-2.5 rounded-2xl text-sm border border-white/20">Open Finder</button>
+                    <button onclick="closeWindow(this)" class="flex-1 bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all text-white/90 font-medium py-2.5 rounded-2xl text-sm border border-white/10">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dock -->
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[200]">
+        <div class="dock flex items-end gap-x-2 px-3 py-3 rounded-3xl">
+            <!-- Finder (Updated to match Desktop and specific URL) -->
+            <div onclick="openApp('finder')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Finder">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png" class="w-[48px] h-[48px] object-contain drop-shadow" alt="Finder">
+                <div class="h-1 w-1 bg-white/70 rounded-full mt-0.5"></div>
+            </div>
+            
+            <!-- Safari -->
+            <div onclick="openApp('safari')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Safari">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Safari_icon_macOS_Big_Sur.png/1024px-Safari_icon_macOS_Big_Sur.png" class="w-[48px] h-[48px] object-contain drop-shadow" alt="Safari">
+            </div>
+            
+            <!-- Messages -->
+            <div onclick="openApp('messages')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Messages">
+                <img src="https://help.apple.com/assets/694059163A98DA7C77096BB3/6940591877CC4A95400B60E4/en_AU/aa2633c8fb2814decdff5ee6b4dde94e.png" class="w-[48px] h-[48px] object-contain drop-shadow" alt="Messages">
+            </div>
+            
+            <!-- Photos -->
+            <div onclick="openApp('photos')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Photos">
+                <img src="https://help.apple.com/assets/68CC87B9CAAD76736901E52B/68CC87BBC2E039F703036A8A/en_AU/d1c53b6b8d4bae14b946fa9a54794550.png" class="w-[48px] h-[48px] object-contain drop-shadow" alt="Photos">
+            </div>
+
+            <!-- App Store (Updated to specific URL) -->
+            <div onclick="openApp('appstore')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="App Store">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/App_Store_%28iOS%29.svg/500px-App_Store_%28iOS%29.svg.png" class="w-[48px] h-[48px] object-contain drop-shadow" alt="App Store">
+            </div>
+            
+            <!-- Settings -->
+            <div onclick="openApp('settings')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="System Settings">
+                <img src="https://cdn.iconscout.com/icon/free/png-256/free-apple-settings-icon-svg-download-png-493162.png?f=webp" class="w-[48px] h-[48px] object-contain drop-shadow" alt="Settings">
+            </div>
+
+            <!-- Launchpad -->
+            <div onclick="openApp('launchpad')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Launchpad">
+                <div class="w-[48px] h-[48px] rounded-[14px] bg-gradient-to-br from-slate-500 to-slate-800 grid grid-cols-3 gap-1 p-2 shadow-lg">
+                    <span class="rounded bg-blue-400"></span><span class="rounded bg-pink-400"></span><span class="rounded bg-emerald-400"></span>
+                    <span class="rounded bg-orange-400"></span><span class="rounded bg-violet-400"></span><span class="rounded bg-cyan-400"></span>
+                    <span class="rounded bg-red-400"></span><span class="rounded bg-yellow-400"></span><span class="rounded bg-indigo-400"></span>
+                </div>
+            </div>
+            
+            <div class="w-px h-9 bg-white/20 mx-0.5"></div>
+            
+            <!-- Terminal -->
+            <div onclick="openApp('terminal')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Terminal">
+                <img src="https://help.apple.com/assets/67DB80CC8ED20D93270BDBE5/67DB80CD888B30021203ACDC/en_US/71142b814e58f29c2e808244a3ef5877.png" class="w-[48px] h-[48px] object-contain drop-shadow" alt="Terminal">
+            </div>
+            
+            <!-- Snake -->
+            <div onclick="openApp('snake')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Snake.io">
+                <div class="w-[48px] h-[48px] rounded-[14px] bg-white/10 grid place-items-center shadow-lg text-4xl">🐍</div>
+            </div>
+            
+            <!-- Flappy Bird -->
+            <div onclick="openApp('flappy')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Flappy Bird">
+                <div class="w-[48px] h-[48px] rounded-[14px] bg-white/10 grid place-items-center shadow-lg text-4xl">🐦</div>
+            </div>
+            
+            <!-- iPhone Mirroring -->
+            <div onclick="openApp('iphone')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="iPhone Mirroring">
+                <img src="https://kommodo.ai/i/y6ZULfL1JP5X2KUZZ6HB" class="w-[48px] h-[48px] object-contain drop-shadow" alt="iPhone Mirroring">
+            </div>
+
+            <!-- Unblocked Games -->
+            <div onclick="openApp('unblockedgames')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Unblocked Games">
+                <div class="w-[48px] h-[48px] rounded-[14px] bg-gradient-to-br from-yellow-400 to-orange-500 grid place-items-center shadow-lg">
+                    <i class="fa-solid fa-gamepad text-white text-2xl"></i>
+                </div>
+            </div>
+            
+            <!-- Trash -->
+            <div onclick="openApp('trash')" class="dock-icon flex flex-col items-center cursor-pointer px-1 relative" data-label="Trash">
+                <div class="w-[48px] h-[48px] rounded-[14px] bg-white/10 grid place-items-center shadow-lg text-4xl">🗑️</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function initTailwind() { document.documentElement.style.setProperty('--accent', '#007aff'); }
+        let userPhotos = [];
+
+        function addPhotosFromFiles(fileList) {
+            if (!fileList || !fileList.length) return;
+            let added = 0;
+            Array.from(fileList).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                const url = URL.createObjectURL(file);
+                userPhotos.push({ id: 'photo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9), url: url, name: file.name || 'Photo' });
+                added++;
+            });
+            if (added > 0) { showNotification(added === 1 ? '1 photo added' : `${added} photos added`); refreshOpenPhotosWindows(); refreshWallpaperPickerIfOpen(); }
+        }
+        function refreshOpenPhotosWindows() {
+            document.querySelectorAll('.macos-window[data-app="photos"]').forEach(win => {
+                const grid = win.querySelector('#photos-grid');
+                if (grid) { grid.innerHTML = renderPhotosGridHTML(); }
+                const countEl = win.querySelector('#photos-count');
+                if (countEl) countEl.textContent = userPhotos.length;
+            });
+        }
+        function refreshWallpaperPickerIfOpen() {
+            document.querySelectorAll('.macos-window[data-app="settings"]').forEach(win => {
+                const picker = win.querySelector('#wallpaper-user-photos');
+                if (picker) { picker.innerHTML = renderWallpaperUserPhotosHTML(); }
+            });
+        }
+        function renderPhotosGridHTML() {
+            if (userPhotos.length === 0) return `<div class="col-span-3 text-center py-10 text-white/50"><div class="text-5xl mb-3">📷</div><div class="font-medium mb-1">No Photos Yet</div><div class="text-xs">Click “Add Photos” to import images from your computer</div></div>`;
+            return userPhotos.map(photo => `<div class="relative group aspect-square rounded-2xl overflow-hidden bg-black/30 cursor-pointer shadow-lg" onclick="showUploadedPhotoPreview('${photo.id}')"><img src="${photo.url}" alt="" class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"><div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div><div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"><div class="text-[10px] text-white truncate">${photo.name.replace(/</g, '&lt;')}</div></div></div>`).join('');
+        }
+        function showUploadedPhotoPreview(id) {
+            const photo = userPhotos.find(p => p.id === id);
+            if (!photo) return;
+            createWindow(photo.name, `<div class="flex flex-col items-center"><img src="${photo.url}" alt="" class="max-w-full max-h-[480px] rounded-2xl shadow-2xl object-contain"><div class="mt-4 text-center text-white/60 text-sm">${photo.name.replace(/</g, '&lt;')}</div></div>`, '🌄', 680);
+        }
+        function setCustomWallpaperFromFile(input) {
+            const file = input.files && input.files[0];
+            if (!file || !file.type.startsWith('image/')) { showNotification('Please choose an image file'); return; }
+            const url = URL.createObjectURL(file);
+            applyWallpaperUrl(url, file.name);
+            userPhotos.unshift({ id: 'photo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9), url: url, name: file.name });
+            refreshOpenPhotosWindows(); refreshWallpaperPickerIfOpen(); input.value = '';
+        }
+        function applyWallpaperUrl(url, label) {
+            const desktop = document.getElementById('desktop');
+            desktop.style.setProperty('background-image', `url('${url}')`, 'important');
+            desktop.style.setProperty('background-size', 'cover', 'important');
+            desktop.style.setProperty('background-position', 'center', 'important');
+            showNotification(label ? `Wallpaper: ${label}` : 'Custom wallpaper applied');
+        }
+        function setWallpaperFromPhoto(id) {
+            const photo = userPhotos.find(p => p.id === id);
+            if (!photo) return; applyWallpaperUrl(photo.url, photo.name);
+        }
+        function renderWallpaperUserPhotosHTML() {
+            if (userPhotos.length === 0) return `<div class="text-xs text-white/40 col-span-full py-4 text-center">Import photos in the Photos app or upload below to use them as wallpaper</div>`;
+            return userPhotos.map(photo => `<button onclick="setWallpaperFromPhoto('${photo.id}')" class="aspect-video rounded-xl overflow-hidden ring-2 ring-transparent hover:ring-[#0a84ff] transition-all focus:ring-[#0a84ff]"><img src="${photo.url}" class="w-full h-full object-cover" alt=""></button>`).join('');
+        }
+
+        function updateClock() {
+            const clockEl = document.getElementById('clock');
+            function tick() {
+                const now = new Date();
+                const hours = now.getHours(), minutes = now.getMinutes(), ampm = hours >= 12 ? 'PM' : 'AM';
+                const displayHours = hours % 12 || 12;
+                const timeStr = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                clockEl.innerHTML = `${timeStr} &nbsp; <span class="text-white/50">|</span> &nbsp; ${dateStr}`;
+            }
+            tick(); setInterval(tick, 30000);
+        }
+
+        let draggedWindow = null, offsetX = 0, offsetY = 0, highestZ = 100, dragRAF = null;
+        function startDrag(e, windowEl) {
+            highestZ++; windowEl.style.zIndex = highestZ;
+            draggedWindow = windowEl;
+            const rect = windowEl.getBoundingClientRect();
+            offsetX = e.clientX - rect.left; offsetY = e.clientY - rect.top;
+            document.addEventListener('mousemove', dragMove);
+            document.addEventListener('mouseup', stopDrag, { once: true });
+            e.preventDefault();
+        }
+        function dragMove(e) {
+            if (!draggedWindow) return;
+            if (dragRAF) cancelAnimationFrame(dragRAF);
+            dragRAF = requestAnimationFrame(() => {
+                const desktopRect = document.getElementById('desktop').getBoundingClientRect();
+                let newLeft = e.clientX - offsetX, newTop = e.clientY - offsetY;
+                const maxLeft = desktopRect.width - draggedWindow.offsetWidth, maxTop = desktopRect.height - draggedWindow.offsetHeight - 20;
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+                draggedWindow.style.left = `${newLeft}px`; draggedWindow.style.top = `${newTop}px`; draggedWindow.style.transform = 'none';
+            });
+        }
+        function stopDrag() { draggedWindow = null; if (dragRAF) cancelAnimationFrame(dragRAF); document.removeEventListener('mousemove', dragMove); }
+
+        function closeWindow(element) {
+            const windowEl = element.closest('.macos-window');
+            if (windowEl) { windowEl.style.transition = 'all 0.2s cubic-bezier(0.23, 1.0, 0.32, 1)'; windowEl.style.opacity = '0'; windowEl.style.transform = 'scale(0.95) translateY(10px)'; setTimeout(() => windowEl.remove(), 180); }
+        }
+        function minimizeWindow(element) {
+            const windowEl = element.closest('.macos-window');
+            if (windowEl) { windowEl.style.transition = 'all 0.25s cubic-bezier(0.23, 1.0, 0.32, 1)'; windowEl.style.opacity = '0'; windowEl.style.transform = 'scale(0.6) translateY(80px)'; setTimeout(() => { windowEl.style.display = 'none'; windowEl.style.opacity = '1'; windowEl.style.transform = 'scale(1)'; showNotification(`Minimized: ${windowEl.querySelector('.title-bar .text-white\\/90')?.textContent || 'Window'}`); }, 250); }
+        }
+        function maximizeWindow(element) {
+            const windowEl = element.closest('.macos-window');
+            if (!windowEl) return;
+            if (windowEl.dataset.maximized === 'true') {
+                windowEl.style.transition = 'all 0.3s cubic-bezier(0.23, 1.0, 0.32, 1)';
+                windowEl.style.width = windowEl.dataset.originalWidth || '420px'; windowEl.style.height = windowEl.dataset.originalHeight || 'auto';
+                windowEl.style.left = windowEl.dataset.originalLeft || '50%'; windowEl.style.top = windowEl.dataset.originalTop || '33%';
+                windowEl.style.transform = windowEl.dataset.originalTransform || 'translateX(-50%)'; windowEl.dataset.maximized = 'false';
+            } else {
+                const rect = document.getElementById('desktop').getBoundingClientRect();
+                windowEl.dataset.originalWidth = windowEl.style.width || windowEl.offsetWidth + 'px'; windowEl.dataset.originalHeight = windowEl.style.height || 'auto';
+                windowEl.dataset.originalLeft = windowEl.style.left || windowEl.offsetLeft + 'px'; windowEl.dataset.originalTop = windowEl.style.top || windowEl.offsetTop + 'px';
+                windowEl.dataset.originalTransform = windowEl.style.transform || '';
+                windowEl.style.transition = 'all 0.3s cubic-bezier(0.23, 1.0, 0.32, 1)';
+                windowEl.style.left = '16px'; windowEl.style.top = '16px'; windowEl.style.width = (rect.width - 32) + 'px'; windowEl.style.height = (rect.height - 80) + 'px'; windowEl.style.transform = 'none'; windowEl.dataset.maximized = 'true';
+            }
+        }
+
+        let windowCount = 0;
+        function createWindow(title, contentHTML, icon = '📄', width = 480) {
+            windowCount++;
+            const desktop = document.getElementById('desktop');
+            const windowEl = document.createElement('div');
+            windowEl.className = `macos-window absolute rounded-2xl overflow-hidden glass liquid-highlight z-[${50 + windowCount}]`;
+            windowEl.style.width = `${width}px`; windowEl.style.minHeight = '320px';
+            windowEl.style.left = `${120 + (windowCount % 5) * 60}px`; windowEl.style.top = `${90 + (windowCount % 3) * 40}px`;
+            windowEl.innerHTML = `
+                <div class="title-bar flex items-center px-3 cursor-move" onmousedown="startDrag(event, this.parentElement)">
+                    <div class="flex items-center gap-x-2 w-full">
+                        <div class="flex items-center gap-x-[6px]">
+                            <div onclick="closeWindow(this)" class="traffic-light bg-[#ff5f57] hover:bg-[#ff4d4d] border border-[#e0443e]"></div>
+                            <div onclick="minimizeWindow(this)" class="traffic-light bg-[#febc2e] hover:bg-[#f5b01e] border border-[#d89c1a]"></div>
+                            <div onclick="maximizeWindow(this)" class="traffic-light bg-[#28c840] hover:bg-[#1eb23a] border border-[#1a9c32]"></div>
+                        </div>
+                        <div class="flex items-center gap-x-2 ml-2 flex-1 min-w-0 justify-center absolute left-0 right-0 pointer-events-none">
+                            <span class="text-white/95 text-sm font-medium truncate">${title}</span>
+                        </div>
+                        <div class="flex items-center gap-x-1 text-white/50 ml-auto relative z-10 pointer-events-auto">
+                            <i class="fa-solid fa-ellipsis-h text-xs px-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="window-content text-white p-5 text-sm" style="max-height: 520px; overflow-y: auto;">${contentHTML}</div>
+            `;
+            desktop.appendChild(windowEl);
+            windowEl.addEventListener('mousedown', () => { highestZ++; windowEl.style.zIndex = highestZ; });
+            windowEl.style.opacity = '0'; windowEl.style.transform = 'scale(0.92) translateY(20px)';
+            requestAnimationFrame(() => { windowEl.style.transition = 'all 0.25s cubic-bezier(0.23, 1.0, 0.32, 1)'; windowEl.style.opacity = '1'; windowEl.style.transform = 'scale(1) translateY(0)'; });
+            return windowEl;
+        }
+
+        const appStoreCatalog = [
+            { id:'notes', name:'Notes', icon:'📝', category:'Productivity', description:'Capture ideas, lists and sketches.' },
+            { id:'calendar', name:'Calendar', icon:'📅', category:'Productivity', description:'Plan events and keep your day organised.' },
+            { id:'calculator', name:'Calculator', icon:'🧮', category:'Utilities', description:'A fast, full-featured calculator.', width:380 },
+            { id:'weather', name:'Weather', icon:'🌤️', category:'Utilities', description:'Beautiful forecasts for your locations.' },
+            { id:'clockapp', name:'Clock', icon:'🕐', category:'Utilities', description:'World clocks, alarms and timers.' },
+            { id:'maps', name:'Maps', icon:'🗺️', category:'Travel', description:'Explore places and plan a route.', width:760 },
+            { id:'mail', name:'Mail', icon:'✉️', category:'Productivity', description:'All your email in one place.', width:760 },
+            { id:'reminders', name:'Reminders', icon:'✅', category:'Productivity', description:'Smart lists that keep you on track.' },
+            { id:'books', name:'Books', icon:'📚', category:'Entertainment', description:'Read and organise your library.' },
+            { id:'podcasts', name:'Podcasts', icon:'🎙️', category:'Entertainment', description:'Discover shows and new episodes.' },
+            { id:'freeform', name:'Freeform', icon:'🎨', category:'Creativity', description:'A flexible canvas for your ideas.', width:760 },
+            { id:'chess', name:'Chess', icon:'♟️', category:'Games', description:'Play a classic game of strategy.' },
+            { id:'stocks', name:'Stocks', icon:'📈', category:'Finance', description:'Follow markets and your watchlist.' },
+            { id:'dictionary', name:'Dictionary', icon:'📖', category:'Reference', description:'Definitions, synonyms and more.' }
+        ];
+
+        const unblockedSites = [
+            { name: 'Unblocked Games 66 EZ', url: 'https://unblockedgames66ez.com/', icon: '🎮', cat: 'General' },
+            { name: 'Unblocked Games 76', url: 'https://unblockedgames76.com/', icon: '🕹️', cat: 'General' },
+            { name: 'ccportedd', url: 'https://ccportedd.global.ssl.fastly.net/', icon: '🎯', cat: 'General' },
+            { name: '3kh0', url: 'https://3kh0.bitbucket.io/', icon: '🟦', cat: 'General' },
+            { name: 'DuckPrep', url: 'https://d2gve52fz9syn8.cloudfront.net/', icon: '🦆', cat: 'General' },
+            { name: 'Tyrone\'s Unblocked', url: 'https://tyronesgames.com/', icon: '🎲', cat: 'General' },
+            { name: 'Arcade Prehacks', url: 'https://www.arcadeprehacks.com/', icon: '🕹️', cat: 'Arcade' },
+            { name: 'Math Playground', url: 'https://www.mathplayground.com/', icon: '🏀', cat: 'Math' },
+            { name: 'Unblocked Games 88', url: 'https://unblockedgames88.com/', icon: '🎮', cat: 'General' },
+            { name: 'Google Pac-Man', url: 'https://www.google.com/search?q=play+pacman', icon: '👻', cat: 'Classic' },
+            { name: 'Google Snake', url: 'https://www.google.com/search?q=play+snake', icon: '🐍', cat: 'Classic' }
+        ];
+        
+        function renderUnblockedGamesHTML() {
+            return unblockedSites.map(site => `
+                <div onclick="window.open('${site.url}', '_blank')" class="unblocked-game-card bg-white/5 hover:bg-white/10 rounded-2xl p-4 cursor-pointer transition-all flex flex-col items-center text-center border border-white/5 hover:border-[#0a84ff] group">
+                    <div class="w-12 h-12 rounded-2xl bg-black/40 shadow-inner flex items-center justify-center text-3xl mb-2 group-hover:scale-110 transition-transform">${site.icon}</div>
+                    <div class="font-medium text-sm leading-tight">${site.name}</div>
+                    <div class="text-xs text-white/40 mt-1">${site.cat}</div>
+                </div>
+            `).join('');
+        }
+        function filterUnblockedGames(query, inputEl) {
+            const win = inputEl.closest('.macos-window');
+            const cards = win.querySelectorAll('.unblocked-game-card');
+            cards.forEach(card => {
+                const name = card.querySelector('.font-medium').textContent.toLowerCase();
+                card.style.display = name.includes(query.toLowerCase()) ? 'flex' : 'none';
+            });
+        }
+
+        function openApp(app) {
+            const dockIcon = Array.from(document.querySelectorAll('.dock-icon')).find(item => item.getAttribute('onclick')?.includes(`'${app}'`));
+            if (dockIcon) dockIcon.animate([{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-22px) scale(1.08)' }, { transform: 'translateY(0) scale(1)' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
+            const existing = document.querySelector(`[data-app="${app}"]`);
+            if (existing) { highestZ++; existing.style.display = 'block'; existing.style.opacity = '1'; existing.style.zIndex = highestZ; existing.style.transition = 'all 0.2s ease'; existing.style.transform = 'scale(1.02)'; setTimeout(() => { existing.style.transform = 'scale(1)'; }, 180); return; }
+            
+            let title = '', content = '', icon = '📄', width = 480;
+            switch(app) {
+                case 'finder':
+                    title = 'Finder'; icon = '📁'; width = 620;
+                    content = `<div class="flex items-center justify-between mb-4"><div class="flex items-center gap-x-2"><button class="px-3 py-1 text-xs bg-white/10 rounded-xl flex items-center gap-x-1.5 hover:bg-white/15"><i class="fa-solid fa-chevron-left"></i></button><button class="px-3 py-1 text-xs bg-white/10 rounded-xl flex items-center gap-x-1.5 hover:bg-white/15"><i class="fa-solid fa-chevron-right"></i></button></div><div class="text-xs text-white/60">Macintosh HD • 4 items</div></div><div class="grid grid-cols-4 gap-4"><div onclick="openApp('applications')" class="flex flex-col items-center p-3 rounded-2xl hover:bg-white/5 cursor-pointer"><div class="text-5xl mb-2">📁</div><div class="text-xs text-center">Applications</div></div><div onclick="openApp('documents')" class="flex flex-col items-center p-3 rounded-2xl hover:bg-white/5 cursor-pointer"><div class="text-5xl mb-2">📁</div><div class="text-xs text-center">Documents</div></div><div onclick="openApp('pictures')" class="flex flex-col items-center p-3 rounded-2xl hover:bg-white/5 cursor-pointer"><div class="text-5xl mb-2">📁</div><div class="text-xs text-center">Pictures</div></div><div onclick="openApp('musicfolder')" class="flex flex-col items-center p-3 rounded-2xl hover:bg-white/5 cursor-pointer"><div class="text-5xl mb-2">📁</div><div class="text-xs text-center">Music</div></div></div><div class="mt-6 pt-4 border-t border-white/10 text-xs text-white/50">Drag files here or use the dock to open apps.</div>`;
+                    break;
+                case 'safari':
+                    title = 'Safari'; icon = '🌐'; width = 960;
+                    content = `<div class="flex flex-col h-full -m-5 overflow-hidden" style="min-height: 580px;" data-safari-root><div class="flex items-end gap-1 px-2 pt-2 bg-black/20 border-b border-white/10 overflow-x-auto" id="safari-tab-bar"><div class="safari-tab active flex items-center gap-2 max-w-[180px] min-w-[120px] px-3 py-1.5 rounded-t-lg bg-white/15 text-xs cursor-pointer group" data-tab-id="tab_1" onclick="safariSwitchTab(this)"><i class="fa-brands fa-google text-[10px] opacity-70"></i><span class="tab-title truncate flex-1">Google</span><button onclick="event.stopPropagation(); safariCloseTab(this)" class="opacity-0 group-hover:opacity-100 w-4 h-4 rounded-full hover:bg-white/20 flex items-center justify-center text-[10px]">×</button></div><button onclick="safariAddTab(this)" class="w-7 h-7 mb-0.5 rounded-md hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white text-sm" title="New Tab"><i class="fa-solid fa-plus"></i></button></div><div class="h-11 bg-white/10 flex items-center px-3 border-b border-white/10 gap-2"><button onclick="safariGoBack(this)" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-white/70"><i class="fa-solid fa-chevron-left text-sm"></i></button><button onclick="safariGoForward(this)" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-white/70"><i class="fa-solid fa-chevron-right text-sm"></i></button><button onclick="safariReload(this)" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-white/70"><i class="fa-solid fa-rotate-right text-sm"></i></button><div class="flex-1 flex items-center bg-white/10 rounded-full px-3 py-1.5"><i class="fa-solid fa-lock text-emerald-400 mr-2 text-xs"></i><input class="safari-url flex-1 bg-transparent outline-none text-xs text-white/95 placeholder:text-white/40" type="text" value="https://www.google.com" placeholder="Search or enter website name" onkeydown="if(event.key==='Enter'){safariNavigate(this); event.preventDefault();}"></div><button onclick="safariNavigate(this.closest('[data-safari-root]').querySelector('.safari-url'))" class="px-3 py-1.5 rounded-full bg-[#0a84ff] hover:bg-[#0077ed] text-xs font-medium">Go</button></div><iframe class="safari-frame flex-1 w-full border-0 bg-white" src="https://www.google.com/webhp?igu=1" style="min-height: 480px;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe></div>`;
+                    break;
+                case 'messages':
+                    title = 'Messages'; icon = '💬'; width = 520;
+                    content = `<div class="space-y-3"><div class="flex gap-3"><div class="w-9 h-9 bg-gradient-to-br from-purple-400 to-violet-500 rounded-2xl flex-shrink-0 flex items-center justify-center text-white text-xl">👩🏻</div><div class="flex-1"><div class="flex justify-between items-baseline"><div class="font-semibold">Emma Chen</div><div class="text-[10px] text-white/50">now</div></div><div class="text-sm text-white/70">Hey! Did you see the new liquid glass demo?</div></div></div><div class="flex gap-3 justify-end"><div class="max-w-[75%] bg-[#007aff] rounded-3xl px-4 py-2 text-sm">Yeah! The blur effect is insane 🔥</div></div><div class="flex gap-3"><div class="w-9 h-9 bg-gradient-to-br from-rose-400 to-orange-400 rounded-2xl flex-shrink-0 flex items-center justify-center text-white text-xl">🧑🏻</div><div class="flex-1"><div class="flex justify-between items-baseline"><div class="font-semibold">Alex Rivera</div><div class="text-[10px] text-white/50">2m</div></div><div class="text-sm text-white/70">This HTML version looks so real!</div></div></div></div><div class="mt-6 pt-4 border-t border-white/10"><div class="flex items-center bg-white/10 rounded-3xl px-4 py-2 text-sm"><input type="text" placeholder="iMessage" class="flex-1 bg-transparent outline-none placeholder:text-white/40"><i class="fa-solid fa-paper-plane text-[#007aff]"></i></div></div>`;
+                    break;
+                case 'photos':
+                    title = 'Photos'; icon = '📷'; width = 620;
+                    content = `<div class="flex items-center justify-between mb-4"><div class="text-xs text-white/60">Library • <span id="photos-count">${userPhotos.length}</span> photos</div><div><input type="file" accept="image/*" multiple class="hidden photos-file-input" onchange="addPhotosFromFiles(this.files); this.value='';"><button onclick="this.previousElementSibling.click()" class="text-xs px-4 py-1.5 rounded-full bg-[#0a84ff] hover:bg-[#0077ed] font-medium transition-colors"><i class="fa-solid fa-plus mr-1"></i> Add Photos</button></div></div><div id="photos-grid" class="grid grid-cols-3 gap-2">${renderPhotosGridHTML()}</div><div class="text-center mt-4 text-xs text-white/50">Click a photo to view full size • Photos stay in this session</div>`;
+                    break;
+                case 'appstore':
+                    title = 'App Store'; icon = '🅰️'; width = 920; content = appStoreHTML(); break;
+                case 'launchpad':
+                case 'applications':
+                    title = app === 'launchpad' ? 'Launchpad' : 'Applications'; icon = app === 'launchpad' ? '🚀' : '📁'; width = 860;
+                    content = `<div class="flex flex-col h-full -m-5 bg-[#1c1c1e]/40 backdrop-blur-2xl overflow-hidden" style="min-height: 640px;"><div class="flex justify-center pt-6 pb-3"><div class="bg-black/40 backdrop-blur-xl rounded-full px-5 py-2.5 flex items-center gap-3 w-[60%] max-w-md border border-white/10"><i class="fa-solid fa-magnifying-glass text-white/50"></i><span class="text-white/50 font-medium text-sm">Search or Ask</span><i class="fa-solid fa-ellipsis text-white/50 ml-auto"></i></div></div><div class="flex gap-2 px-6 py-2 overflow-x-auto scrollbar-hide border-b border-white/5"><button class="px-4 py-1 bg-white/15 rounded-full text-xs text-white font-medium">Utilities</button><button class="px-4 py-1 bg-white/10 rounded-full text-xs text-white/70 hover:bg-white/15">Productivity</button><button class="px-4 py-1 bg-white/10 rounded-full text-xs text-white/70 hover:bg-white/15">Social</button><button class="px-4 py-1 bg-white/10 rounded-full text-xs text-white/70 hover:bg-white/15">Photo & Video</button><button class="px-4 py-1 bg-white/10 rounded-full text-xs text-white/70 hover:bg-white/15">Music</button><button class="px-4 py-1 bg-white/10 rounded-full text-xs text-white/70 hover:bg-white/15">Entertainment</button><button class="px-4 py-1 bg-white/10 rounded-full text-xs text-white/70 hover:bg-white/15">Education</button></div><div class="flex-1 p-6 overflow-y-auto"><div class="launchpad-grid grid grid-cols-4 gap-y-6 gap-x-4">${launchpadTile('finder','📁','Finder')}${launchpadTile('safari','🧭','Safari')}${launchpadTile('messages','💬','Messages')}${launchpadTile('photos','🌈','Photos')}${launchpadTile('settings','⚙️','Settings')}${launchpadTile('terminal','⌨️','Terminal')}${launchpadTile('iphone','📱','iPhone Mirroring')}${launchpadTile('snake','🐍','Snake.io')}${launchpadTile('flappy','🐦','Flappy Bird')}${launchpadTile('tictactoe','❎','Tic-Tac-Toe')}${launchpadTile('memory','🧠','Memory Match')}${launchpadTile('unblockedgames','🎮','Unblocked Games')}${installedAppsHTML()}</div></div></div>`;
+                    break;
+                case 'pictures':
+                    title = 'Pictures'; icon = '📁'; width = 600; content = `<div class="flex justify-between items-center mb-4"><span class="text-white/55 text-xs">Pictures · 6 items</span><button onclick="openApp('photos')" class="text-[#4da3ff] text-xs">Open Photos</button></div><div class="grid grid-cols-3 gap-3">${['from-amber-300 to-orange-500','from-sky-300 to-blue-700','from-emerald-300 to-teal-700','from-pink-300 to-rose-600','from-violet-300 to-indigo-700','from-yellow-200 to-cyan-500'].map((color,index) => `<button onclick="showPhotoPreview(${index + 1})" class="aspect-square rounded-2xl bg-gradient-to-br ${color} hover:scale-[1.03] transition-transform shadow-lg"></button>`).join('')}</div>`;
+                    break;
+                case 'musicfolder':
+                    title = 'Music'; icon = '📁'; width = 560; content = `<div class="space-y-2">${['Midnight City — M83','Blinding Lights — The Weeknd','Dreams — Fleetwood Mac','Electric Feel — MGMT'].map((song,index) => `<div onclick="playFolderSong('${song.replace(/'/g, "\\'")}',this)" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 cursor-pointer"><span class="w-10 h-10 rounded-lg bg-gradient-to-br ${index % 2 ? 'from-pink-500 to-violet-700' : 'from-cyan-400 to-blue-700'} grid place-items-center">♪</span><span class="flex-1">${song}</span><i class="fa-solid fa-play text-white/40"></i></div>`).join('')}</div>`;
+                    break;
+                case 'settings':
+                    title = 'System Settings'; icon = '⚙️'; width = 1040;
+                    content = `<div class="flex -m-5 h-[680px] bg-[#202326]"><aside class="w-[300px] bg-[#17212a]/95 border-r border-white/10 p-3 flex-shrink-0 overflow-y-auto"><div class="relative mb-4"><i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-white/40 text-sm"></i><input oninput="filterSettings(this.value)" placeholder="Search" class="w-full bg-white/10 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-1 focus:ring-[#0a84ff]"></div><div id="settings-account-card" onclick="openAccountSettings(this)" class="mb-3 px-3 py-2 rounded-xl hover:bg-white/10 cursor-pointer flex items-center gap-3">${settingsAccountCardHTML()}</div><div class="h-px bg-white/10 mb-3"></div>${settingsSidebarHTML()}</aside><div class="flex-1 flex flex-col min-w-0"><div class="h-14 flex items-center px-5 gap-2 border-b border-white/5"><button class="w-10 h-9 rounded-xl bg-white/5 text-white/35 hover:bg-white/10"><i class="fa-solid fa-chevron-left"></i></button><button class="w-10 h-9 rounded-xl bg-white/5 text-white/35 hover:bg-white/10"><i class="fa-solid fa-chevron-right"></i></button></div><main id="settings-detail" class="flex-1 p-6 overflow-y-auto">${settingsPaneHTML('general')}</main></div></div>`;
+                    break;
+                case 'terminal':
+                    title = 'Terminal'; icon = '⌨️'; width = 620;
+                    content = `<div class="bg-black/70 text-emerald-400 font-mono text-xs p-4 rounded-xl leading-relaxed"><div>Last login: ${new Date().toLocaleString()}</div><div class="mt-2">user@macbook-pro ~ % <span class="text-white">whoami</span></div><div>user</div><div class="mt-1">user@macbook-pro ~ % <span class="text-white">echo "Liquid glass is beautiful"</span></div><div>Liquid glass is beautiful</div><div class="mt-3 flex items-center"><span>user@macbook-pro ~ %</span> <span class="ml-1 inline-block w-2 h-3.5 bg-emerald-400 animate-pulse"></span></div></div>`;
+                    break;
+                case 'trash':
+                    title = 'Trash'; icon = '🗑️'; width = 380; content = `<div class="text-center py-8"><div class="text-7xl mb-4 opacity-60">🗑️</div><div class="font-medium mb-1">Trash is empty</div><div class="text-xs text-white/50">Items you delete will appear here</div><button onclick="showNotification('Trash emptied'); closeWindow(this)" class="mt-6 text-xs px-5 py-2 rounded-2xl bg-white/10 hover:bg-white/15 transition-colors">Empty Trash</button></div>`;
+                    break;
+                case 'documents':
+                    title = 'Documents'; icon = '📄';
+                    content = `<div class="space-y-2 text-sm"><div onclick="showDocumentPreview('Project Proposal.pdf','pdf')" class="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-2xl cursor-pointer"><i class="fa-solid fa-file-lines text-xl text-orange-400 w-5"></i><div>Project Proposal.pdf</div></div><div onclick="showDocumentPreview('Design System v4.fig','design')" class="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-2xl cursor-pointer"><i class="fa-solid fa-file-lines text-xl text-sky-400 w-5"></i><div>Design System v4.fig</div></div><div onclick="showDocumentPreview('Meeting Notes - Jan 2026.md','notes')" class="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-2xl cursor-pointer"><i class="fa-solid fa-file-lines text-xl text-emerald-400 w-5"></i><div>Meeting Notes - Jan 2026.md</div></div></div>`;
+                    break;
+                case 'downloads':
+                    title = 'Downloads'; icon = '⬇️'; content = `<div class="text-xs text-white/50 mb-3">3 recent downloads</div><div class="space-y-2"><div onclick="showDocumentPreview('macOS Guide.pdf','pdf')" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 cursor-pointer"><span class="text-3xl">📕</span><div class="flex-1"><div>macOS Guide.pdf</div><div class="text-xs text-white/40">4.2 MB · Today</div></div></div><div onclick="showPhotoPreview(7)" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 cursor-pointer"><span class="text-3xl">🌄</span><div class="flex-1"><div>Wallpaper.png</div><div class="text-xs text-white/40">8.7 MB · Today</div></div></div><div onclick="showNotification('Archive expanded')" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 cursor-pointer"><span class="text-3xl">🗜️</span><div class="flex-1"><div>Assets.zip</div><div class="text-xs text-white/40">12.1 MB · Yesterday</div></div></div></div>`;
+                    break;
+                case 'games':
+                    title = 'Games'; icon = '🎮'; width = 680;
+                    content = `<div><div class="text-xs text-white/50 mb-3 px-1">4 games installed</div><div class="grid grid-cols-4 gap-3"><div onclick="openApp('snake'); closeWindow(this)" class="glass rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-all active:scale-[0.985]"><div class="text-5xl mb-3 text-center">🐍</div><div class="font-semibold text-center">Snake.io</div><div class="text-xs text-white/50 text-center mt-0.5">Classic</div></div><div onclick="openApp('flappy'); closeWindow(this)" class="glass rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-all active:scale-[0.985]"><div class="text-5xl mb-3 text-center">🐦</div><div class="font-semibold text-center">Flappy Bird</div><div class="text-xs text-white/50 text-center mt-0.5">Arcade</div></div><div onclick="openApp('tictactoe'); closeWindow(this)" class="glass rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-all active:scale-[0.985]"><div class="text-5xl mb-3 text-center">❎</div><div class="font-semibold text-center">Tic-Tac-Toe</div><div class="text-xs text-white/50 text-center mt-0.5">Board</div></div><div onclick="openApp('memory'); closeWindow(this)" class="glass rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-all active:scale-[0.985]"><div class="text-5xl mb-3 text-center">🧠</div><div class="font-semibold text-center">Memory</div><div class="text-xs text-white/50 text-center mt-0.5">Puzzle</div></div></div><div class="mt-5 text-center text-xs text-white/40">Click any game to launch</div></div>`;
+                    break;
+                case 'tictactoe':
+                    title = 'Tic-Tac-Toe'; icon = '❎'; width = 420;
+                    content = `<div class="text-center"><div id="ttt-status" class="text-lg font-semibold mb-4">Your turn — X</div><div id="ttt-board" class="grid grid-cols-3 gap-2 w-[300px] mx-auto">${Array.from({length:9}, (_,index) => `<button onclick="playTicTacToe(${index},this)" class="ttt-cell h-[94px] rounded-2xl bg-white/10 hover:bg-white/15 text-5xl font-semibold"></button>`).join('')}</div><button onclick="resetTicTacToe(this)" class="mt-5 bg-[#0a84ff] px-5 py-2 rounded-xl">New Game</button></div>`;
+                    break;
+                case 'memory':
+                    title = 'Memory Match'; icon = '🧠'; width = 500;
+                    content = `<div class="text-center"><div class="flex justify-between mb-4"><span class="font-semibold">Find all matching pairs</span><span>Moves: <b id="memory-moves">0</b></span></div><div id="memory-board" class="grid grid-cols-4 gap-3">${memoryBoardHTML()}</div><button onclick="resetMemoryGame(this)" class="mt-5 bg-[#0a84ff] px-5 py-2 rounded-xl">Shuffle</button></div>`;
+                    break;
+                case 'iphone':
+                    title = 'iPhone Mirroring'; icon = '📱'; width = 440;
+                    content = `<div class="flex flex-col items-center py-1"><div class="mb-2 flex items-center justify-between w-full max-w-[280px] px-1"><div><div class="text-lg font-semibold">iPhone Mirroring</div><div class="text-xs text-emerald-400">iPhone 16 Pro • Connected</div></div><div class="flex gap-1 text-xs"><button onclick="changeIphoneSize('small')" class="px-2 py-0.5 bg-white/10 hover:bg-white/20 rounded text-[10px]">S</button><button onclick="changeIphoneSize('medium')" class="px-2 py-0.5 bg-white/10 hover:bg-white/20 rounded text-[10px]">M</button><button onclick="changeIphoneSize('large')" class="px-2 py-0.5 bg-emerald-500/80 hover:bg-emerald-500 rounded text-[10px] text-white">L</button></div></div><div class="relative" style="width: 280px; height: 560px;"><div class="absolute inset-0 bg-[#0a0a0a] rounded-[65px] p-2 shadow-[0_0_0_8px_#111,0_25px_60px_-15px_rgb(0,0,0,0.6)]"><div onclick="toggleDynamicIslandIphone()" class="absolute top-[12px] left-1/2 -translate-x-1/2 w-[110px] h-[28px] bg-black rounded-[40px] z-20 flex items-center justify-center cursor-pointer hover:w-[130px] transition-all"><div class="flex items-center gap-x-1.5 px-2 text-[9px] text-white"><i class="fa-solid fa-music text-emerald-400"></i><span class="font-medium">Now Playing</span></div></div><div id="iphone-screen" class="w-full h-full bg-black rounded-[58px] overflow-hidden relative" style="box-shadow: inset 0 0 0 1px #222;"><div id="iphone-lock" class="absolute inset-0 bg-[linear-gradient(#1a1a2e,#0f0f1a)] flex flex-col items-center justify-center text-white" style="z-index: 30;"><div class="mt-12 text-center"><div class="text-6xl font-light tracking-[-2px]">9:41</div><div class="text-sm text-white/70 -mt-1">Wednesday, June 17</div></div><div class="flex-1"></div><div onclick="unlockIphone()" class="mb-12 cursor-pointer"><div class="flex flex-col items-center"><i class="fa-solid fa-chevron-up text-2xl mb-1 text-white/60"></i><div class="text-xs text-white/50">Swipe up to unlock</div></div></div></div><div id="iphone-home" class="absolute inset-0 hidden flex-col" style="z-index: 20; background: linear-gradient(#0f172a, #020617);"><div class="h-11 flex items-center justify-between px-6 text-white text-[10px] pt-1"><div class="font-medium">9:41</div><div class="flex items-center gap-x-[3px]"><i class="fa-solid fa-signal text-[9px]"></i><i class="fa-solid fa-wifi text-[9px]"></i><span class="font-medium">100%</span></div></div><div class="flex-1 px-5 pt-4 grid grid-cols-4 gap-y-7 text-white text-[10px]"><div onclick="openIphoneApp('messages')" class="flex flex-col items-center cursor-pointer"><div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-1 shadow">💬</div><div>Messages</div></div><div onclick="openIphoneApp('safari')" class="flex flex-col items-center cursor-pointer"><div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl flex items-center justify-center text-3xl mb-1 shadow">🌐</div><div>Safari</div></div><div onclick="openIphoneApp('photos')" class="flex flex-col items-center cursor-pointer"><div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center text-3xl mb-1 shadow">📷</div><div>Photos</div></div><div onclick="openIphoneApp('camera')" class="flex flex-col items-center cursor-pointer"><div class="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-500 rounded-2xl flex items-center justify-center text-3xl mb-1 shadow">📸</div><div>Camera</div></div><div onclick="openIphoneApp('settings')" class="flex flex-col items-center cursor-pointer"><div class="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center text-3xl mb-1 shadow">⚙️</div><div>Settings</div></div><div onclick="openIphoneApp('music')" class="flex flex-col items-center cursor-pointer"><div class="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-600 rounded-2xl flex items-center justify-center text-3xl mb-1 shadow">🎵</div><div>Music</div></div><div onclick="openIphoneApp('appstore')" class="flex flex-col items-center cursor-pointer"><div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-3xl mb-1 shadow">🛍️</div><div>App Store</div></div><div onclick="openIphoneApp('notes')" class="flex flex-col items-center cursor-pointer"><div class="w-12 h-12 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-2xl flex items-center justify-center text-3xl mb-1 shadow">📝</div><div>Notes</div></div></div><div class="h-[72px] bg-black/40 backdrop-blur-xl flex items-center justify-around px-4 rounded-b-[58px]"><div onclick="openIphoneApp('phone')" class="text-3xl cursor-pointer">📞</div><div onclick="openIphoneApp('messages')" class="text-3xl cursor-pointer">💬</div><div onclick="openIphoneApp('safari')" class="text-3xl cursor-pointer">🌐</div><div onclick="openIphoneApp('music')" class="text-3xl cursor-pointer">🎵</div></div></div></div></div></div><div class="mt-2 text-xs text-white/40 text-center">Click lock screen to unlock</div></div>`;
+                    break;
+                case 'snake':
+                    title = 'Snake.io'; icon = '🐍'; width = 520;
+                    content = `<div class="flex flex-col h-full"><div class="flex items-center justify-between mb-3 px-1"><div><div class="text-xl font-semibold tracking-tight">Snake.io</div><div class="text-xs text-white/50">Classic • Single Player</div></div><div class="text-right"><div class="text-xs text-white/50">SCORE</div><div id="snake-score" class="text-3xl font-bold tabular-nums text-emerald-400">0</div></div></div><div class="relative flex-1 flex items-center justify-center bg-black/40 rounded-2xl p-3 border border-white/10"><canvas id="snake-canvas" width="440" height="440" class="rounded-xl border border-white/20 cursor-pointer" style="background: #0a0f1a; box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 10px 30px rgba(0,0,0,0.4);"></canvas><div id="snake-overlay" class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/60"><div class="text-center"><div class="text-6xl mb-2">🐍</div><div class="text-xl font-semibold mb-1">Snake.io</div><div class="text-white/60 text-sm mb-6">Eat the food • Grow longer • Don't crash!</div><button onclick="startSnakeGame(this)" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 transition-all text-white font-semibold rounded-2xl text-sm shadow-lg">START GAME</button><div class="mt-4 text-xs text-white/40">Use Arrow Keys or WASD</div></div></div></div><div class="flex items-center justify-between mt-3 px-1 text-xs"><div class="flex items-center gap-x-4 text-white/50"><div><span class="font-mono">↑</span> <span class="font-mono">↓</span> <span class="font-mono">←</span> <span class="font-mono">→</span></div><div>or WASD</div></div><div class="flex items-center gap-x-2"><button onclick="pauseSnakeGame()" class="px-4 py-1.5 bg-white/10 hover:bg-white/15 rounded-xl text-xs transition-colors">Pause</button><button onclick="restartSnakeGame()" class="px-4 py-1.5 bg-white/10 hover:bg-white/15 rounded-xl text-xs transition-colors">Restart</button></div></div><div class="mt-2 text-center"><div class="text-xs text-white/40">High Score: <span id="snake-highscore" class="font-semibold text-white/70">0</span></div></div></div>`;
+                    break;
+                case 'unblockedgames':
+                    title = 'Unblocked Games Hub'; icon = '🎮'; width = 960;
+                    content = `<div class="flex flex-col h-full -m-5 bg-[#1c1c1e]/90 backdrop-blur-xl overflow-hidden" style="min-height: 600px;"><div class="p-6 border-b border-white/10 flex flex-col gap-3"><div class="flex items-center justify-between"><h1 class="text-2xl font-bold tracking-tight mb-1">🎮 Unblocked Games Hub</h1><span class="text-xs text-white/40">${unblockedSites.length} portals</span></div><p class="text-xs text-white/60 -mt-1">Collection of unblocked game portals. Click any card to open in a new browser tab.</p><div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-white/40 text-sm"></i><input id="ug-search-input" oninput="filterUnblockedGames(this.value, this)" placeholder="Search games or sites..." class="w-full bg-black/40 rounded-2xl py-2 pl-9 pr-3 outline-none border border-white/5 focus:border-[#0a84ff] text-sm"></div></div><div id="unblocked-grid" class="flex-1 p-6 overflow-y-auto grid grid-cols-4 gap-4 content-start">${renderUnblockedGamesHTML()}</div></div>`;
+                    break;
+                default:
+                    const storeApp = appStoreCatalog.find(item => item.id === app);
+                    if (storeApp) { title = storeApp.name; icon = storeApp.icon; width = storeApp.width || 620; content = storeAppContent(storeApp); } else { title = 'App'; content = `<div class="p-8 text-center text-white/70">This app is running in Liquid Glass mode.</div>`; }
+            }
+            const win = createWindow(title, content, icon, width);
+            win.dataset.app = app;
+            if (app === 'settings') { win.style.height = '760px'; win.style.maxHeight = 'calc(100vh - 70px)'; win.style.left = 'calc(50% - 520px)'; win.style.top = '48px'; win.style.transform = 'none'; const settingsContent = win.querySelector('.window-content'); settingsContent.style.maxHeight = 'none'; settingsContent.style.height = 'calc(100% - 36px)'; settingsContent.style.overflow = 'hidden'; }
+            if (app === 'safari' || app === 'unblockedgames') { win.style.height = '680px'; win.style.maxHeight = 'calc(100vh - 80px)'; const contentEl = win.querySelector('.window-content'); if (contentEl) { contentEl.style.maxHeight = 'none'; contentEl.style.height = 'calc(100% - 36px)'; contentEl.style.overflow = 'hidden'; contentEl.style.padding = '0'; } }
+            const titleBar = win.querySelector('.title-bar'); titleBar?.addEventListener('dblclick', () => maximizeWindow(titleBar));
+            if (app === 'snake') setTimeout(() => initSnakeGame(win), 50);
+            if (app === 'flappy') setTimeout(() => initFlappyGame(win), 50);
+            addResizeHandle(win);
+        }
+
+        function getInstalledApps() { try { return JSON.parse(localStorage.getItem('macosInstalledApps') || '[]'); } catch { return []; } }
+        function appStoreCard(app) { const installed = getInstalledApps().includes(app.id); return `<article class="store-card bg-white/5 hover:bg-white/10 rounded-2xl p-4 flex gap-4 transition-colors" data-name="${app.name.toLowerCase()}" data-category="${app.category.toLowerCase()}"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 grid place-items-center text-4xl shadow-lg flex-shrink-0">${app.icon}</div><div class="min-w-0 flex-1"><h3 class="font-semibold">${app.name}</h3><div class="text-[10px] uppercase text-white/40">${app.category}</div><p class="text-xs text-white/55 mt-1 line-clamp-2">${app.description}</p></div><button onclick="installStoreApp('${app.id}',this)" class="self-center min-w-[70px] bg-white/10 hover:bg-white/20 text-[#4da3ff] font-semibold text-xs px-4 py-1.5 rounded-full">${installed ? 'OPEN' : 'GET'}</button></article>`;
+        }
+        function appStoreHTML() { return `<div class="-m-5 min-h-[540px] bg-[#17191c]"><div class="sticky top-0 z-10 bg-[#17191c]/90 backdrop-blur-xl border-b border-white/10 px-6 py-5"><div class="flex items-end justify-between gap-6"><div><div class="text-[#4da3ff] text-xs font-semibold">Discover</div><h1 class="text-3xl font-bold">App Store</h1></div><div class="relative w-72"><i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-white/35"></i><input oninput="filterAppStore(this.value)" placeholder="Search apps" class="w-full bg-white/10 rounded-xl py-2 pl-9 pr-3 outline-none"></div></div><div class="flex gap-2 mt-4 overflow-x-auto">${['All','Productivity','Utilities','Creativity','Entertainment','Games'].map(category => `<button onclick="filterStoreCategory('${category}',this)" class="store-category px-4 py-1.5 rounded-full ${category === 'All' ? 'bg-[#0a84ff]' : 'bg-white/10'} text-xs whitespace-nowrap">${category}</button>`).join('')}</div></div><div class="p-6"><div class="rounded-3xl bg-gradient-to-r from-violet-700 via-blue-600 to-cyan-500 p-7 mb-6 shadow-2xl"><div class="text-xs uppercase tracking-widest text-white/70">Featured Collection</div><div class="text-2xl font-semibold mt-1">Make your Mac yours.</div><div class="text-white/70 mt-1">Download useful apps, then find them in Launchpad.</div></div><div id="store-grid" class="grid grid-cols-2 gap-3">${appStoreCatalog.map(appStoreCard).join('')}</div><div id="store-empty" class="hidden text-center text-white/45 py-16">No apps found</div></div></div>`; }
+        function filterAppStore(query) { let visible = 0; document.querySelectorAll('.store-card').forEach(card => { const show = card.dataset.name.includes(query.toLowerCase()); card.style.display = show ? 'flex' : 'none'; if (show) visible++; }); document.getElementById('store-empty')?.classList.toggle('hidden', visible > 0); }
+        function filterStoreCategory(category, button) { button.parentElement.querySelectorAll('.store-category').forEach(item => { item.classList.remove('bg-[#0a84ff]'); item.classList.add('bg-white/10'); }); button.classList.add('bg-[#0a84ff]'); button.classList.remove('bg-white/10'); let visible = 0; document.querySelectorAll('.store-card').forEach(card => { const show = category === 'All' || card.dataset.category === category.toLowerCase(); card.style.display = show ? 'flex' : 'none'; if (show) visible++; }); document.getElementById('store-empty')?.classList.toggle('hidden', visible > 0); }
+        function installStoreApp(id, button) { const installed = getInstalledApps(); if (installed.includes(id)) { openApp(id); return; } button.disabled = true; button.textContent = '●'; let progress = 0; const timer = setInterval(() => { progress += 25; button.textContent = `${progress}%`; if (progress < 100) return; clearInterval(timer); installed.push(id); localStorage.setItem('macosInstalledApps', JSON.stringify(installed)); button.textContent = 'OPEN'; button.disabled = false; const app = appStoreCatalog.find(item => item.id === id); const launchpad = document.querySelector('[data-app="launchpad"] .launchpad-grid, [data-app="applications"] .launchpad-grid'); if (launchpad && !launchpad.querySelector(`[data-store-app="${id}"]`)) launchpad.insertAdjacentHTML('beforeend', installedAppTile(app)); showNotification(`${app.name} installed`); }, 180); }
+        function installedAppTile(app) { return `<div data-store-app="${app.id}" data-app-name="${app.name.toLowerCase()}" onclick="openApp('${app.id}')" class="flex flex-col items-center gap-2 cursor-pointer group"><div class="w-16 h-16 rounded-2xl bg-white/10 grid place-items-center text-4xl shadow-lg group-hover:scale-110 transition-transform">${app.icon}</div><span class="text-xs text-center">${app.name}</span></div>`; }
+        function installedAppsHTML() { const installed = getInstalledApps(); return appStoreCatalog.filter(app => installed.includes(app.id)).map(installedAppTile).join(''); }
+        function launchpadTile(app, emoji, label) { return `<div data-app-name="${label.toLowerCase()}" onclick="openApp('${app}')" class="flex flex-col items-center gap-2 cursor-pointer group"><div class="w-16 h-16 rounded-2xl bg-white/10 grid place-items-center text-4xl shadow-lg group-hover:scale-110 transition-transform">${emoji}</div><span class="text-xs text-center">${label}</span></div>`; }
+        function filterLaunchpad(query) { document.querySelectorAll('.launchpad-grid > [data-app-name]').forEach(tile => { tile.style.display = tile.dataset.appName.includes(query.toLowerCase()) ? 'flex' : 'none'; }); }
+        function storeAppContent(app) { const content = { notes: `<div class="flex -m-5 min-h-[480px]"><aside class="w-48 bg-black/15 p-3 border-r border-white/10"><button onclick="newNote(this)" class="w-full bg-[#0a84ff] rounded-lg py-2 mb-3">New Note</button><div class="note-list bg-white/10 rounded-lg p-3"><b>Welcome</b><div class="text-xs text-white/40">Start writing…</div></div></aside><textarea class="flex-1 bg-transparent p-6 text-lg outline-none resize-none" placeholder="Write a note…">Welcome to Notes!\n\nThis note saves while the window stays open.</textarea></div>`, calendar: `<div><div class="flex justify-between items-center mb-5"><h2 class="text-2xl font-semibold">${new Date().toLocaleDateString('en-AU',{month:'long',year:'numeric'})}</h2><button onclick="showNotification('New event created')" class="bg-[#0a84ff] px-4 py-2 rounded-lg">+ Event</button></div><div class="grid grid-cols-7 gap-1 text-center">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(day=>`<div class="text-xs text-white/45 py-2">${day}</div>`).join('')}${Array.from({length:35},(_,i)=>`<button onclick="this.classList.toggle('bg-[#0a84ff]')" class="h-14 rounded-xl hover:bg-white/10 ${i+1===new Date().getDate()?'bg-[#0a84ff]':''}">${i<31?i+1:''}</button>`).join('')}</div></div>`, calculator: `<div class="bg-black/25 rounded-2xl p-4"><input id="calc-display" readonly value="0" class="w-full bg-transparent text-right text-5xl mb-4 outline-none"><div class="grid grid-cols-4 gap-2">${['C','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','.','⌫','='].map(key=>`<button onclick="calculatorPress('${key}',this)" class="h-14 rounded-full ${['÷','×','−','+','='].includes(key)?'bg-orange-500':'bg-white/15'} text-xl">${key}</button>`).join('')}</div></div>`, weather: `<div class="rounded-3xl bg-gradient-to-br from-sky-400 to-blue-800 p-7 min-h-[420px]"><div class="text-white/70">Brisbane</div><div class="text-7xl font-light mt-2">24°</div><div class="text-xl">Mostly Sunny</div><div class="text-white/65">H: 27° &nbsp; L: 16°</div><div class="grid grid-cols-5 gap-2 mt-10">${['Now','7 pm','8 pm','9 pm','10 pm'].map((time,i)=>`<div class="bg-white/10 rounded-2xl p-3 text-center"><div class="text-xs">${time}</div><div class="text-2xl my-2">${i>2?'🌙':'☀️'}</div><div>${24-i}°</div></div>`).join('')}</div></div>`, clockapp: `<div class="grid grid-cols-2 gap-4"><div class="bg-white/10 rounded-2xl p-6 text-center"><div class="text-white/45">Brisbane</div><div class="text-5xl mt-2">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div><div class="bg-white/10 rounded-2xl p-6 text-center"><div class="text-white/45">Cupertino</div><div class="text-5xl mt-2">${new Date().toLocaleTimeString('en-US',{timeZone:'America/Los_Angeles',hour:'2-digit',minute:'2-digit'})}</div></div></div><button onclick="startQuickTimer(this)" class="mt-5 w-full bg-[#0a84ff] rounded-xl py-3">Start 1 Minute Timer</button>`, maps: `<div class="relative h-[480px] -m-5 overflow-hidden bg-[#d7e1d2]"><div class="absolute inset-0 opacity-60" style="background-image:linear-gradient(35deg,transparent 47%,#fff 48%,#fff 52%,transparent 53%),linear-gradient(-25deg,transparent 47%,#b8c7b4 48%,#b8c7b4 52%,transparent 53%);background-size:90px 70px"></div><div class="absolute top-4 left-4 right-4 flex gap-2"><input placeholder="Search Maps" class="flex-1 bg-white/90 text-slate-800 rounded-xl px-4 py-3 outline-none shadow-xl"><button onclick="showNotification('Showing your location')" class="bg-white text-blue-600 w-12 rounded-xl shadow-xl"><i class="fa-solid fa-location-arrow"></i></button></div><div class="absolute left-1/2 top-1/2 text-4xl drop-shadow-xl">📍</div></div>`, mail: `<div class="flex -m-5 min-h-[480px]"><aside class="w-44 bg-black/15 p-4 border-r border-white/10"><b>Mailboxes</b><div class="mt-4 space-y-3 text-white/70"><div>📥 Inbox <b class="float-right">3</b></div><div>⭐ VIP</div><div>📤 Sent</div><div>🗑️ Bin</div></div></aside><div class="w-64 border-r border-white/10">${['Welcome to Mail','Your weekly update','Design review tomorrow'].map((subject,i)=>`<button onclick="readMail('${subject}',this)" class="w-full text-left p-4 border-b border-white/10 hover:bg-white/10"><b>${subject}</b><div class="text-xs text-white/45">Message preview ${i+1}…</div></button>`).join('')}</div><div id="mail-reader" class="flex-1 p-6 text-white/45 grid place-items-center">Select a message</div></div>`, reminders: `<div><div class="flex gap-2 mb-5"><input id="reminder-input" placeholder="New reminder" class="flex-1 bg-white/10 rounded-xl px-4 outline-none"><button onclick="addReminder(this)" class="bg-[#0a84ff] px-5 py-2 rounded-xl">Add</button></div><div id="reminder-list" class="space-y-2">${['Try the new App Store','Open Launchpad','Play a game'].map(item=>`<label class="flex gap-3 bg-white/10 p-4 rounded-xl"><input type="checkbox"><span>${item}</span></label>`).join('')}</div></div>`, books: `<div><h2 class="text-2xl font-semibold mb-5">Your Library</h2><div class="grid grid-cols-4 gap-5">${['The Creative Act','Tomorrow, and Tomorrow','Designing Interfaces','The Long Way Home'].map((book,i)=>`<button onclick="showNotification('Opening ${book}')" class="text-left"><div class="aspect-[2/3] rounded-xl bg-gradient-to-br ${['from-orange-400 to-red-800','from-cyan-400 to-blue-900','from-violet-400 to-indigo-900','from-emerald-400 to-teal-900'][i]} p-4 shadow-xl font-serif">${book}</div><div class="text-xs mt-2">${book}</div></button>`).join('')}</div></div>`, podcasts: `<div><h2 class="text-2xl font-semibold mb-5">Up Next</h2>${['The Daily Brief','Science Vs','Design Better','History This Week'].map((show,i)=>`<div class="flex items-center gap-4 p-3 hover:bg-white/10 rounded-xl"><div class="w-14 h-14 rounded-xl bg-gradient-to-br ${i%2?'from-orange-400 to-pink-700':'from-violet-400 to-blue-800'} grid place-items-center text-2xl">🎙️</div><div class="flex-1"><b>${show}</b><div class="text-xs text-white/45">Episode ${42-i} · Today</div></div><button onclick="showNotification('Playing ${show}')" class="w-9 h-9 rounded-full bg-white/15">▶</button></div>`).join('')}</div>`, freeform: `<div class="relative h-[480px] -m-5 bg-[#eee9dc] overflow-hidden"><div class="absolute top-4 left-4 flex gap-2"><button onclick="addFreeformNote(this)" class="bg-white text-slate-800 px-4 py-2 rounded-xl shadow">+ Sticky Note</button><button onclick="showNotification('Board exported')" class="bg-white text-slate-800 px-4 py-2 rounded-xl shadow">Export</button></div><div id="freeform-board"><div contenteditable="true" class="absolute left-24 top-28 w-44 h-36 bg-yellow-200 text-slate-800 p-4 shadow-xl rotate-[-3deg] outline-none">Double-click and type your idea…</div></div></div>`, chess: `<div class="text-center"><div class="grid grid-cols-8 w-[400px] mx-auto shadow-2xl">${Array.from({length:64},(_,i)=>`<button onclick="selectChessSquare(this)" class="h-[50px] text-3xl ${(Math.floor(i/8)+i)%2?'bg-[#769656]':'bg-[#eeeed2]'} text-slate-900">${i<8?'♟':i>55?'♙':''}</button>`).join('')}</div><div class="mt-4 text-white/50">Click squares to move pieces</div></div>`, stocks: `<div><h2 class="text-2xl font-semibold mb-5">Watchlist</h2>${[['AAPL','Apple','+1.28%'],['NVDA','NVIDIA','+2.14%'],['TSLA','Tesla','−0.84%'],['MSFT','Microsoft','+0.47%']].map(([ticker,name,change])=>`<div class="settings-row"><div><b>${ticker}</b><div class="text-xs text-white/45">${name}</div></div><div class="text-right"><div>${(100+Math.random()*400).toFixed(2)}</div><div class="text-xs ${change.startsWith('+')?'text-emerald-400':'text-red-400'}">${change}</div></div></div>`).join('')}</div>`, dictionary: `<div><div class="flex gap-2 mb-6"><input id="dictionary-input" placeholder="Search a word" class="flex-1 bg-white/10 rounded-xl px-4 outline-none"><button onclick="lookupWord(this)" class="bg-[#0a84ff] px-5 py-2 rounded-xl">Search</button></div><div id="dictionary-result" class="bg-white/5 rounded-2xl p-6"><h2 class="text-3xl font-serif">macintosh</h2><div class="text-white/40">noun</div><p class="mt-4">A type of personal computer made by Apple.</p></div></div>` }; return content[app.id] || `<div class="text-center py-12 text-6xl">${app.icon}<div class="text-xl mt-4">${app.name}</div></div>`; }
+        function calculatorPress(key, button) { const display = button.closest('.macos-window').querySelector('#calc-display'); if (key === 'C') display.value = '0'; else if (key === '⌫') display.value = display.value.slice(0,-1) || '0'; else if (key === '=') { try { display.value = Function(`"use strict";return (${display.value.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')})`)(); } catch { display.value = 'Error'; } } else if (key === '±') display.value = String(-Number(display.value)); else if (key === '%') display.value = String(Number(display.value)/100); else display.value = display.value === '0' ? key : display.value + key; }
+        function newNote(button) { const textarea = button.closest('.macos-window').querySelector('textarea'); textarea.value = ''; textarea.focus(); }
+        function startQuickTimer(button) { let seconds = 60; button.disabled = true; const timer = setInterval(() => { seconds--; button.textContent = `00:${String(seconds).padStart(2,'0')}`; if (seconds > 0) return; clearInterval(timer); button.textContent = 'Timer Complete'; showNotification('Timer complete'); }, 1000); }
+        function readMail(subject, button) { button.closest('.macos-window').querySelector('#mail-reader').innerHTML = `<div><h2 class="text-2xl text-white font-semibold">${subject}</h2><div class="text-xs mt-2">From: hello@example.com</div><p class="text-white/70 mt-6">This is a demo email inside your macOS experience. The Mail app is working nicely.</p></div>`; }
+        function addReminder(button) { const win = button.closest('.macos-window'); const input = win.querySelector('#reminder-input'); if (!input.value.trim()) return; win.querySelector('#reminder-list').insertAdjacentHTML('beforeend', `<label class="flex gap-3 bg-white/10 p-4 rounded-xl"><input type="checkbox"><span>${input.value.replace(/[<>]/g,'')}</span></label>`); input.value = ''; }
+        function addFreeformNote(button) { const board = button.closest('.macos-window').querySelector('#freeform-board'); const count = board.children.length; board.insertAdjacentHTML('beforeend', `<div contenteditable="true" class="absolute w-40 h-32 bg-pink-200 text-slate-800 p-4 shadow-xl outline-none" style="left:${100+count*35}px;top:${120+count*28}px">New idea…</div>`); }
+        function selectChessSquare(square) { const board = square.parentElement; const selected = board.querySelector('.ring-4'); if (!selected) { square.classList.add('ring-4','ring-yellow-400','relative','z-10'); } else { if (selected.textContent) { square.textContent = selected.textContent; selected.textContent = ''; } selected.classList.remove('ring-4','ring-yellow-400','relative','z-10'); } }
+        function lookupWord(button) { const win = button.closest('.macos-window'); const word = win.querySelector('#dictionary-input').value.trim() || 'word'; win.querySelector('#dictionary-result').innerHTML = `<h2 class="text-3xl font-serif">${word.replace(/[<>]/g,'')}</h2><div class="text-white/40">noun</div><p class="mt-4">A useful word found in the macOS demo dictionary.</p>`; }
+        function showPhotoPreview(number) { createWindow(`Photo ${number}`, `<div class="aspect-video rounded-2xl bg-gradient-to-br from-sky-300 via-violet-500 to-orange-400 shadow-2xl"></div><div class="mt-4 text-center text-white/55">Photo ${number} · Today</div>`, '🌄', 620); }
+        function playFolderSong(song, row) { row.closest('.macos-window').querySelectorAll('.fa-pause').forEach(icon => { icon.classList.replace('fa-pause', 'fa-play'); }); row.querySelector('i').classList.replace('fa-play', 'fa-pause'); showNotification(`Now Playing: ${song}`); }
+        function showDocumentPreview(name, type) { const previews = { pdf: `<div class="bg-white text-slate-800 rounded-xl p-8 min-h-[360px] shadow-xl"><h1 class="text-3xl font-bold mb-3">Project Proposal</h1><p class="text-slate-500 mb-6">Interactive macOS Experience</p><div class="space-y-3"><div class="h-3 bg-slate-200 rounded w-full"></div><div class="h-3 bg-slate-200 rounded w-4/5"></div><div class="h-3 bg-slate-200 rounded w-2/3"></div></div></div>`, design: `<div class="grid grid-cols-3 gap-3"><div class="h-52 rounded-xl bg-violet-500"></div><div class="h-52 rounded-xl bg-cyan-500"></div><div class="h-52 rounded-xl bg-pink-500"></div></div>`, notes: `<textarea class="w-full h-80 bg-yellow-50 text-slate-800 rounded-xl p-5 outline-none resize-none">Meeting Notes\n\n• Finish the macOS interaction pass\n• Test the new games\n• Polish the folder experience</textarea>` }; createWindow(name, previews[type], type === 'pdf' ? '📕' : '📄', 620); }
+        function ticTacToeWinner(values) { const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return lines.find(line => values[line[0]] && values[line[0]] === values[line[1]] && values[line[1]] === values[line[2]]); }
+        function playTicTacToe(index, cell) { const board = cell.closest('#ttt-board'); const status = board.parentElement.querySelector('#ttt-status'); if (cell.textContent || board.dataset.finished === 'true' || board.dataset.thinking === 'true') return; cell.textContent = 'X'; let cells = Array.from(board.querySelectorAll('.ttt-cell')); let values = cells.map(item => item.textContent); if (ticTacToeWinner(values)) { status.textContent = 'You win! 🎉'; board.dataset.finished = 'true'; return; } const empty = cells.map((item,i) => item.textContent ? -1 : i).filter(i => i >= 0); if (!empty.length) { status.textContent = 'It’s a draw'; board.dataset.finished = 'true'; return; } board.dataset.thinking = 'true'; status.textContent = 'Mac is thinking…'; setTimeout(() => { const available = cells.map((item,i) => item.textContent ? -1 : i).filter(i => i >= 0); const choice = available[Math.floor(Math.random() * available.length)]; if (choice !== undefined) cells[choice].textContent = 'O'; values = cells.map(item => item.textContent); board.dataset.thinking = 'false'; if (ticTacToeWinner(values)) { status.textContent = 'Mac wins'; board.dataset.finished = 'true'; } else if (!values.includes('')) { status.textContent = 'It’s a draw'; board.dataset.finished = 'true'; } else { status.textContent = 'Your turn — X'; } }, 350); }
+        function resetTicTacToe(button) { const win = button.closest('.macos-window'); win.querySelectorAll('.ttt-cell').forEach(cell => cell.textContent = ''); const board = win.querySelector('#ttt-board'); board.dataset.finished = 'false'; board.dataset.thinking = 'false'; win.querySelector('#ttt-status').textContent = 'Your turn — X'; }
+        function memoryBoardHTML() { const cards = ['🍎','🦋','🌈','🚀','🎧','⚡','🎮','🐳']; return [...cards, ...cards].sort(() => Math.random() - .5).map(emoji => `<button data-emoji="${emoji}" onclick="flipMemoryCard(this)" class="memory-card h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-700 text-3xl shadow-lg">?</button>`).join(''); }
+        function flipMemoryCard(card) { const board = card.closest('#memory-board'); if (card.dataset.matched === 'true' || card.dataset.open === 'true' || board.dataset.locked === 'true') return; card.dataset.open = 'true'; card.textContent = card.dataset.emoji; card.classList.add('bg-white/15'); const open = Array.from(board.querySelectorAll('.memory-card[data-open="true"]:not([data-matched="true"])')); if (open.length < 2) return; const moves = board.parentElement.querySelector('#memory-moves'); moves.textContent = Number(moves.textContent) + 1; if (open[0].dataset.emoji === open[1].dataset.emoji) { open.forEach(item => item.dataset.matched = 'true'); if (board.querySelectorAll('[data-matched="true"]').length === 16) showNotification('Memory Match complete! 🎉'); } else { board.dataset.locked = 'true'; setTimeout(() => { open.forEach(item => { item.dataset.open = 'false'; item.textContent = '?'; item.classList.remove('bg-white/15'); }); board.dataset.locked = 'false'; }, 650); } }
+        function resetMemoryGame(button) { const win = button.closest('.macos-window'); win.querySelector('#memory-board').innerHTML = memoryBoardHTML(); win.querySelector('#memory-moves').textContent = '0'; }
+
+        function addResizeHandle(windowEl) {
+            const resizeHandle = document.createElement('div'); resizeHandle.className = 'absolute bottom-1 right-1 w-4 h-4 cursor-nwse-resize flex items-center justify-center'; resizeHandle.innerHTML = `<div class="w-3 h-3 border-r-2 border-b-2 border-white/40 rounded-br"></div>`; windowEl.style.position = 'absolute'; windowEl.appendChild(resizeHandle);
+            let isResizing = false, startX, startY, startWidth, startHeight;
+            resizeHandle.addEventListener('mousedown', (e) => { isResizing = true; startX = e.clientX; startY = e.clientY; startWidth = windowEl.offsetWidth; startHeight = windowEl.offsetHeight; e.stopImmediatePropagation(); document.addEventListener('mousemove', doResize); document.addEventListener('mouseup', stopResize, { once: true }); });
+            let resizeRAF = null;
+            function doResize(e) { if (!isResizing) return; if (resizeRAF) cancelAnimationFrame(resizeRAF); resizeRAF = requestAnimationFrame(() => { const newWidth = startWidth + (e.clientX - startX); const newHeight = startHeight + (e.clientY - startY); windowEl.style.width = Math.max(280, newWidth) + 'px'; windowEl.style.height = Math.max(220, newHeight) + 'px'; }); }
+            function stopResize() { isResizing = false; if (resizeRAF) cancelAnimationFrame(resizeRAF); document.removeEventListener('mousemove', doResize); }
+            resizeHandle.addEventListener('touchstart', (e) => { isResizing = true; startX = e.touches[0].clientX; startY = e.touches[0].clientY; startWidth = windowEl.offsetWidth; startHeight = windowEl.offsetHeight; e.stopImmediatePropagation(); });
+        }
+
+        let snakeGameState = null;
+        function initSnakeGame(windowEl) {
+            const canvas = windowEl.querySelector('#snake-canvas'), overlay = windowEl.querySelector('#snake-overlay'), scoreEl = windowEl.querySelector('#snake-score'), highscoreEl = windowEl.querySelector('#snake-highscore');
+            if (!canvas || !overlay) return;
+            const ctx = canvas.getContext('2d', { alpha: true }), gridSize = 20, tileSize = canvas.width / gridSize;
+            let snake = [{x: 10, y: 10}], direction = {x: 1, y: 0}, nextDirection = {x: 1, y: 0}, food = {x: 15, y: 15}, score = 0, gameRunning = false, gamePaused = false, gameInterval = null;
+            let highScore = 0; try { highScore = parseInt(localStorage.getItem('snakeHighScore') || '0'); } catch (e) {}
+            if (highscoreEl) highscoreEl.textContent = highScore;
+            function draw() { ctx.fillStyle = '#0a0f1a'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1; for (let x = 0; x <= gridSize; x++) { ctx.beginPath(); ctx.moveTo(x * tileSize, 0); ctx.lineTo(x * tileSize, canvas.height); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, x * tileSize); ctx.lineTo(canvas.width, x * tileSize); ctx.stroke(); } ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 12; ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(food.x * tileSize + tileSize/2, food.y * tileSize + tileSize/2, tileSize/2 - 2, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; snake.forEach((segment, index) => { const x = segment.x * tileSize, y = segment.y * tileSize; if (index === 0) { ctx.fillStyle = '#4ade80'; ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 8; } else { ctx.fillStyle = '#22c55e'; ctx.shadowBlur = 0; } ctx.fillRect(x + 1, y + 1, tileSize - 2, tileSize - 2); ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x + 3, y + 3, tileSize - 8, tileSize - 8); }); ctx.shadowBlur = 0; }
+            function update() { if (!gameRunning || gamePaused) return; direction = {...nextDirection}; const head = {...snake[0]}; head.x += direction.x; head.y += direction.y; if (head.x < 0 || head.x >= gridSize || head.y < 0 || head.y >= gridSize) { endGame(); return; } for (let segment of snake) { if (segment.x === head.x && segment.y === head.y) { endGame(); return; } } snake.unshift(head); if (head.x === food.x && head.y === food.y) { score += 10; if (scoreEl) scoreEl.textContent = score; do { food.x = Math.floor(Math.random() * gridSize); food.y = Math.floor(Math.random() * gridSize); } while (snake.some(s => s.x === food.x && s.y === food.y)); if (gameInterval && score % 50 === 0) { clearInterval(gameInterval); const newSpeed = Math.max(80, 160 - Math.floor(score / 50) * 8); gameInterval = setInterval(gameLoop, newSpeed); } } else { snake.pop(); } draw(); }
+            function gameLoop() { update(); }
+            function startGame() { if (gameRunning) return; if (snake.length === 0 || !gameRunning) resetGameState(); gameRunning = true; gamePaused = false; overlay.style.display = 'none'; if (gameInterval) clearInterval(gameInterval); const speed = Math.max(80, 160 - Math.floor(score / 50) * 8); gameInterval = setInterval(gameLoop, speed); draw(); }
+            function endGame() { gameRunning = false; if (gameInterval) { clearInterval(gameInterval); gameInterval = null; } if (score > highScore) { highScore = score; try { localStorage.setItem('snakeHighScore', highScore); } catch (e) {} if (highscoreEl) highscoreEl.textContent = highScore; } overlay.innerHTML = `<div class="text-center"><div class="text-5xl mb-2">💀</div><div class="text-2xl font-semibold mb-1">Game Over</div><div class="text-emerald-400 text-3xl font-bold mb-4">${score}</div><div class="flex gap-3 justify-center"><button onclick="restartSnakeGame()" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-2xl text-sm">Play Again</button></div><div class="mt-4 text-xs text-white/40">High Score: ${highScore}</div></div>`; overlay.style.display = 'flex'; }
+            function resetGameState() { snake = [{x: 10, y: 10}]; direction = {x: 1, y: 0}; nextDirection = {x: 1, y: 0}; food = {x: 15, y: 15}; score = 0; if (scoreEl) scoreEl.textContent = '0'; }
+            function pauseGame() { if (!gameRunning) return; gamePaused = !gamePaused; if (gamePaused) { if (gameInterval) { clearInterval(gameInterval); gameInterval = null; } overlay.style.display = 'flex'; overlay.innerHTML = `<div class="text-center"><div class="text-4xl mb-3">⏸️</div><div class="text-xl font-semibold mb-4">Paused</div><button onclick="pauseSnakeGame()" class="px-8 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-2xl text-sm">Resume</button></div>`; } else { overlay.style.display = 'none'; const speed = Math.max(80, 160 - Math.floor(score / 50) * 8); gameInterval = setInterval(gameLoop, speed); } }
+            function handleKeyDown(e) { if (!gameRunning || gamePaused) { if ((e.key === ' ' || e.key === 'Enter') && !gameRunning) startGame(); return; } let newDir = {...nextDirection}; switch(e.key) { case 'ArrowUp': case 'w': case 'W': if (direction.y !== 1) newDir = {x: 0, y: -1}; break; case 'ArrowDown': case 's': case 'S': if (direction.y !== -1) newDir = {x: 0, y: 1}; break; case 'ArrowLeft': case 'a': case 'A': if (direction.x !== 1) newDir = {x: -1, y: 0}; break; case 'ArrowRight': case 'd': case 'D': if (direction.x !== -1) newDir = {x: 1, y: 0}; break; case ' ': e.preventDefault(); pauseGame(); return; case 'r': case 'R': restartGame(); return; } nextDirection = newDir; }
+            const keyHandler = (e) => handleKeyDown(e); document.addEventListener('keydown', keyHandler); windowEl._snakeKeyHandler = keyHandler; canvas.addEventListener('click', () => { if (!gameRunning) startGame(); });
+            window.startSnakeGame = function(btn) { const currentWin = btn.closest('.macos-window'); if (currentWin && currentWin._snakeGameState) currentWin._snakeGameState.startGame(); else startGame(); };
+            window.pauseSnakeGame = function() { const currentWin = document.querySelector('.macos-window[data-app="snake"]'); if (currentWin && currentWin._snakeGameState) currentWin._snakeGameState.pauseGame(); };
+            window.restartSnakeGame = function() { const currentWin = document.querySelector('.macos-window[data-app="snake"]'); if (currentWin) { const ov = currentWin.querySelector('#snake-overlay'); if (ov) ov.style.display = 'none'; initSnakeGame(currentWin); } };
+            snakeGameState = { startGame, pauseGame, resetGameState, draw, windowEl }; windowEl._snakeGameState = snakeGameState; draw(); overlay.style.display = 'flex';
+        }
+
+        function initFlappyGame(windowEl) {
+            const canvas = windowEl.querySelector('#flappy-canvas'), overlay = windowEl.querySelector('#flappy-overlay'), scoreEl = windowEl.querySelector('#flappy-score'), highscoreEl = windowEl.querySelector('#flappy-highscore');
+            if (!canvas || !overlay) return;
+            const ctx = canvas.getContext('2d'), gravity = 0.38, flapStrength = -8.2, pipeGap = 155, pipeWidth = 52;
+            let bird = { x: 80, y: 200, velocity: 0, size: 18 }, pipes = [], score = 0, gameRunning = false, frame = 0, highScore = 0; try { highScore = parseInt(localStorage.getItem('flappyHighScore') || '0'); } catch (e) {}
+            if (highscoreEl) highscoreEl.textContent = highScore;
+            function resetGame() { bird = { x: 80, y: 200, velocity: 0, size: 18 }; pipes = []; score = 0; frame = 0; if (scoreEl) scoreEl.textContent = '0'; pipes.push({ x: 280, height: 180 }); pipes.push({ x: 480, height: 260 }); }
+            function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = 'rgba(255,255,255,0.15)'; for (let i = 0; i < 3; i++) { const cx = ((frame * 0.5 + i * 120) % (canvas.width + 100)) - 50; ctx.beginPath(); ctx.ellipse(cx, 80 + i * 40, 40, 18, 0, 0, Math.PI * 2); ctx.fill(); } ctx.fillStyle = '#166534'; ctx.strokeStyle = '#14532d'; ctx.lineWidth = 3; pipes.forEach(pipe => { ctx.fillRect(pipe.x, 0, pipeWidth, pipe.height); ctx.strokeRect(pipe.x, 0, pipeWidth, pipe.height); const bottomY = pipe.height + pipeGap; ctx.fillRect(pipe.x, bottomY, pipeWidth, canvas.height - bottomY); ctx.strokeRect(pipe.x, bottomY, pipeWidth, canvas.height - bottomY); ctx.fillStyle = '#4ade80'; ctx.fillRect(pipe.x - 3, pipe.height - 20, pipeWidth + 6, 20); ctx.fillRect(pipe.x - 3, bottomY, pipeWidth + 6, 20); ctx.fillStyle = '#166534'; }); ctx.save(); ctx.translate(bird.x, bird.y); ctx.rotate(Math.min(Math.max(bird.velocity * 0.06, -0.6), 1.2)); ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.ellipse(0, 0, bird.size, bird.size * 0.85, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.ellipse(-4, 0, 10, 6, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(6, -4, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(7, -4, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.restore(); ctx.fillStyle = '#166534'; ctx.fillRect(0, canvas.height - 40, canvas.width, 40); ctx.fillStyle = '#4ade80'; ctx.fillRect(0, canvas.height - 40, canvas.width, 8); }
+            function update() { if (!gameRunning) return; frame++; bird.velocity += gravity; bird.y += bird.velocity; if (bird.y + bird.size > canvas.height - 40 || bird.y - bird.size < 0) { endFlappyGame(); return; } for (let i = pipes.length - 1; i >= 0; i--) { pipes[i].x -= 1.9; if (pipes[i].x + pipeWidth < bird.x && !pipes[i].scored) { pipes[i].scored = true; score++; if (scoreEl) scoreEl.textContent = score; } if (pipes[i].x < -pipeWidth) pipes.splice(i, 1); } if (pipes.length === 0 || pipes[pipes.length - 1].x < 200) { const minHeight = 80, maxHeight = canvas.height - pipeGap - 100; const height = Math.random() * (maxHeight - minHeight) + minHeight; pipes.push({ x: canvas.width + 30, height: height, scored: false }); } for (let pipe of pipes) { if (bird.x + bird.size > pipe.x && bird.x - bird.size < pipe.x + pipeWidth) { if (bird.y - bird.size < pipe.height || bird.y + bird.size > pipe.height + pipeGap) { endFlappyGame(); return; } } } draw(); }
+            let gameLoopInterval = null;
+            function startGame() { if (gameRunning) return; resetGame(); gameRunning = true; overlay.style.display = 'none'; if (gameLoopInterval) clearInterval(gameLoopInterval); gameLoopInterval = setInterval(() => update(), 1000 / 60); }
+            function endFlappyGame() { gameRunning = false; if (gameLoopInterval) { clearInterval(gameLoopInterval); gameLoopInterval = null; } if (score > highScore) { highScore = score; try { localStorage.setItem('flappyHighScore', highScore); } catch (e) {} if (highscoreEl) highscoreEl.textContent = highScore; } overlay.innerHTML = `<div class="text-center"><div class="text-5xl mb-2">💥</div><div class="text-2xl font-bold mb-1">Game Over</div><div class="text-yellow-400 text-4xl font-bold mb-4">${score}</div><button onclick="restartFlappyGame()" class="px-8 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-2xl text-sm">Play Again</button></div>`; overlay.style.display = 'flex'; }
+            function flap() { if (!gameRunning) { startGame(); return; } bird.velocity = flapStrength; }
+            function handleInput(e) { if (e.type === 'keydown' && e.key !== ' ' && e.key !== 'Spacebar') return; e.preventDefault(); flap(); } canvas.addEventListener('click', flap); document.addEventListener('keydown', handleInput); windowEl._flappyKeyHandler = handleInput;
+            window.startFlappyGame = function(btn) { const currentWin = btn.closest('.macos-window'); if (currentWin) { const ov = currentWin.querySelector('#flappy-overlay'); if (ov) ov.style.display = 'none'; const gameWin = currentWin; if (!gameWin._flappyInitialized) initFlappyGame(gameWin); else startGame(); } };
+            window.restartFlappyGame = function() { const currentWin = document.querySelector('.macos-window[data-app="flappy"]'); if (currentWin) initFlappyGame(currentWin); }; windowEl._flappyInitialized = true; resetGame(); draw(); overlay.style.display = 'flex';
+        }
+
+        function unlockIphone() { const lock = document.getElementById('iphone-lock'), home = document.getElementById('iphone-home'); if (lock && home) { lock.style.transition = 'opacity 0.3s ease'; lock.style.opacity = '0'; setTimeout(() => { lock.style.display = 'none'; home.style.display = 'flex'; home.style.opacity = '0'; setTimeout(() => { home.style.transition = 'opacity 0.4s ease'; home.style.opacity = '1'; }, 50); }, 280); } }
+        function toggleDynamicIslandIphone() { showNotification('Now Playing: Blinding Lights - The Weeknd'); }
+        function goToIphoneHome() { const screen = document.getElementById('iphone-screen'), home = document.getElementById('iphone-home'), lock = document.getElementById('iphone-lock'); if (screen && home) { screen.innerHTML = ''; if (lock) lock.style.display = 'none'; home.style.display = 'flex'; } }
+        function changeIphoneSize(size) { const frame = document.querySelector('#iphone-screen')?.parentElement; if (!frame) return; if (size === 'small') { frame.style.width = '240px'; frame.style.height = '480px'; } else if (size === 'medium') { frame.style.width = '280px'; frame.style.height = '560px'; } else if (size === 'large') { frame.style.width = '320px'; frame.style.height = '640px'; } }
+        function openIphoneApp(app) { const screen = document.getElementById('iphone-screen'); if (!screen) return; const lock = document.getElementById('iphone-lock'), home = document.getElementById('iphone-home'); if (lock) lock.style.display = 'none'; if (home) home.style.display = 'none'; let html = ''; switch(app) { case 'messages': html = `<div class="h-full flex flex-col bg-[#0a0a0a] text-white"><div class="h-9 bg-black/70 flex items-center px-3 text-xs"><div onclick="goToIphoneHome()" class="cursor-pointer flex items-center gap-x-1 text-emerald-400"><i class="fa-solid fa-chevron-left"></i> <span>Home</span></div><div class="flex-1 text-center font-semibold">Messages</div></div><div class="flex-1 p-4 text-sm"><div class="mb-4"><div class="flex gap-2"><div class="w-8 h-8 bg-blue-500 rounded-full flex-shrink-0"></div><div><div class="font-medium">Emma Chen</div><div class="text-xs text-white/60">Hey! Did you see the new macOS demo?</div></div></div></div><div class="text-right"><div class="inline-block bg-[#007aff] px-3 py-1.5 rounded-2xl text-sm max-w-[80%]">Yeah it's insane! The liquid glass looks so real.</div></div></div><div class="p-3 border-t border-white/10"><div class="bg-white/10 rounded-3xl px-4 py-2 text-sm flex items-center"><input type="text" placeholder="iMessage" class="flex-1 bg-transparent outline-none text-sm"></div></div></div>`; break; case 'safari': html = `<div class="h-full flex flex-col bg-white overflow-hidden"><div class="h-9 bg-[#f2f2f7] flex items-center px-3 text-xs border-b"><div onclick="goToIphoneHome()" class="cursor-pointer flex items-center gap-x-1 text-[#007aff]"><i class="fa-solid fa-chevron-left"></i> <span>Home</span></div><div class="flex-1 text-center font-medium text-black">google.com</div></div><iframe src="https://www.google.com" class="flex-1 w-full border-0" style="min-height: 400px;"></iframe></div>`; break; case 'settings': html = `<div class="h-full bg-[#0a0a0a] text-white"><div class="h-9 bg-black/70 flex items-center px-3 text-xs"><div onclick="goToIphoneHome()" class="cursor-pointer flex items-center gap-x-1 text-emerald-400"><i class="fa-solid fa-chevron-left"></i> <span>Home</span></div><div class="flex-1 text-center font-semibold">Settings</div></div><div class="p-4"><div class="font-semibold text-xl mb-4">Settings</div><div class="space-y-1 text-sm"><div class="flex justify-between py-3 border-b border-white/10"><div>Airplane Mode</div><div class="text-emerald-400">Off</div></div><div class="flex justify-between py-3 border-b border-white/10"><div>Wi-Fi</div><div class="text-emerald-400">Connected</div></div><div class="flex justify-between py-3 border-b border-white/10"><div>Bluetooth</div><div class="text-emerald-400">On</div></div></div></div></div>`; break; default: html = `<div class="h-full flex items-center justify-center bg-[#0a0a0a] text-white"><div class="text-center"><div class="text-4xl mb-3">📱</div><div>${app.charAt(0).toUpperCase() + app.slice(1)}</div><div class="text-xs text-white/50 mt-1">App opened in simulation</div></div></div>`; } screen.innerHTML = html; }
+
+        function getSetupProfile() { try { return JSON.parse(localStorage.getItem('macosSetupProfile') || '{}'); } catch { return {}; } }
+        function settingsAccountCardHTML() { const profile = getSetupProfile(); if (profile.icloudName) { const initials = profile.icloudName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase(); return `<div class="w-11 h-11 rounded-full bg-gradient-to-br from-sky-300 to-blue-600 grid place-items-center font-semibold">${initials}</div><div><div class="font-semibold">${profile.icloudName}</div><div class="text-xs text-white/50">Apple Account</div></div>`; } return `<div class="w-11 h-11 rounded-full bg-zinc-600 grid place-items-center"><i class="fa-solid fa-user text-xl"></i></div><div><div class="font-semibold">No Apple Account</div><div class="text-xs text-[#0a84ff]">Sign In</div></div>`; }
+        function settingsSidebarHTML() { const items = [['wifi','fa-wifi','Wi-Fi','#0a84ff'],['bluetooth','fa-bluetooth-b','Bluetooth','#0a84ff','brands'],['network','fa-globe','Network','#0a84ff'],['battery','fa-battery-three-quarters','Battery','#30c766'],['general','fa-gear','General','#8e8e93'],['accessibility','fa-universal-access','Accessibility','#0a84ff'],['appearance','fa-circle-half-stroke','Appearance','#111111'],['siri','fa-atom','Apple Intelligence & Siri','#d65be6'],['desktop','fa-display','Desktop & Dock','#1c1c1e'],['displays','fa-sun','Displays','#0a84ff'],['menubar','fa-toggle-on','Menu Bar','#8e8e93'],['spotlight','fa-magnifying-glass','Spotlight','#0a84ff'],['wallpaper','fa-image','Wallpaper','#20b8d8'],['notifications','fa-bell','Notifications','#ff453a'],['sound','fa-volume-high','Sound','#ff375f'],['focus','fa-moon','Focus','#6750e8'],['screentime','fa-hourglass-half','Screen Time','#6750e8'],['lock','fa-lock','Lock Screen','#111111'],['privacy','fa-hand','Privacy & Security','#0a84ff'],['touchid','fa-fingerprint','Touch ID & Password','#f4f4f4'],['users','fa-user-group','Users & Groups','#0a84ff']]; return items.map(([pane, icon, label, color, family]) => `<div onclick="selectSettingsPane('${pane}', this)" class="settings-nav ${pane === 'general' ? 'bg-[#0a67d8]' : ''} px-3 py-1.5 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-white/10"><span class="w-7 h-7 rounded-lg grid place-items-center shadow-sm" style="background:${color}"><i class="fa-${family === 'brands' ? 'brands' : 'solid'} ${icon}"></i></span><span class="text-[14px]">${label}</span></div>`).join(''); }
+        function settingLinkRow(icon, label, color = '#8e8e93') { return `<div class="settings-row cursor-pointer hover:bg-white/5"><span class="flex items-center gap-3"><span class="w-7 h-7 rounded-lg grid place-items-center" style="background:${color}"><i class="fa-solid ${icon} text-sm"></i></span>${label}</span><i class="fa-solid fa-chevron-right text-white/25"></i></div>`; }
+        function settingsPaneHTML(pane) { const panes = { general: `<section class="bg-white/5 rounded-2xl p-7 mb-4 text-center"><div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-zinc-300 to-zinc-600 grid place-items-center shadow-xl mb-3"><i class="fa-solid fa-gear text-4xl"></i></div><h1 class="text-3xl font-bold">General</h1><p class="text-white/55 mt-1">Manage your overall set-up and preferences for Mac, such as software<br>updates, device language, AirDrop and more.</p></section><section class="bg-white/10 rounded-xl overflow-hidden mb-4">${settingLinkRow('fa-laptop','About')}${settingLinkRow('fa-arrows-rotate','Software Update')}${settingLinkRow('fa-hard-drive','Storage')}</section><section class="bg-white/10 rounded-xl overflow-hidden mb-4">${settingLinkRow('fa-apple-whole','AppleCare & Warranty','#f4f4f4')}</section><section class="bg-white/10 rounded-xl overflow-hidden mb-4">${settingLinkRow('fa-tower-broadcast','AirDrop & Continuity','#0a84ff')}${settingLinkRow('fa-keyboard','AutoFill & Passwords')}${settingLinkRow('fa-calendar-days','Date & Time','#0a84ff')}${settingLinkRow('fa-globe','Language & Region','#0a84ff')}${settingLinkRow('fa-list','Login Items & Extensions')}${settingLinkRow('fa-share-nodes','Sharing')}${settingLinkRow('fa-hard-drive','Startup Disk')}${settingLinkRow('fa-clock-rotate-left','Time Machine','#34b5a9')}</section><section class="bg-white/10 rounded-xl overflow-hidden mb-4">${settingLinkRow('fa-certificate','Device Management')}</section><section class="bg-white/10 rounded-xl overflow-hidden">${settingLinkRow('fa-arrow-rotate-left','Transfer or Reset')}<div onclick="restartSetupAssistant()" class="settings-row cursor-pointer hover:bg-white/5"><span class="flex items-center gap-3"><span class="w-7 h-7 rounded-lg bg-[#0a84ff] grid place-items-center"><i class="fa-solid fa-wand-magic-sparkles text-sm"></i></span>Run Setup Assistant Again</span><i class="fa-solid fa-chevron-right text-white/25"></i></div></section>`, appearance: `<h1 class="text-2xl font-semibold mb-5">Appearance</h1><section class="bg-white/10 rounded-xl p-4 mb-4"><div class="font-medium mb-4">Appearance</div><div class="grid grid-cols-3 gap-4 text-center text-xs"><button onclick="setAppearance('light')" class="group"><div class="h-20 bg-gradient-to-b from-sky-200 to-white rounded-xl border-2 border-transparent group-focus:border-[#0a84ff] mb-2"></div>Light</button><button onclick="setAppearance('dark')" class="group"><div class="h-20 bg-gradient-to-b from-zinc-700 to-zinc-950 rounded-xl border-2 border-[#0a84ff] mb-2"></div>Dark</button><button onclick="setAppearance('auto')" class="group"><div class="h-20 rounded-xl border-2 border-transparent group-focus:border-[#0a84ff] mb-2 flex overflow-hidden"><span class="w-1/2 bg-white"></span><span class="w-1/2 bg-zinc-900"></span></div>Auto</button></div></section><section class="bg-white/10 rounded-xl overflow-hidden"><div class="settings-row"><span>Allow wallpaper tinting in windows</span><div class="mac-toggle on" onclick="toggleSetting(this, 'Wallpaper tinting')"></div></div><div class="settings-row"><span>Sidebar icon size</span><select class="bg-white/10 rounded-md px-2 py-1 outline-none"><option>Medium</option><option>Small</option><option>Large</option></select></div></section>`, wifi: `<h1 class="text-2xl font-semibold mb-5">Wi-Fi</h1><section class="bg-white/10 rounded-xl overflow-hidden mb-4"><div class="settings-row"><strong>Wi-Fi</strong><div class="mac-toggle on" onclick="toggleSetting(this, 'Wi-Fi')"></div></div></section><div class="text-xs text-white/50 uppercase mb-2 ml-2">Known Networks</div><section class="bg-white/10 rounded-xl overflow-hidden"><div class="settings-row"><span><i class="fa-solid fa-wifi text-[#0a84ff] mr-3"></i>Home Wi-Fi</span><span class="text-xs text-emerald-400">Connected</span></div><div class="settings-row"><span><i class="fa-solid fa-wifi mr-3"></i>Studio 5G</span><button onclick="showNotification('Joining Studio 5G…')" class="text-[#0a84ff] text-xs">Connect</button></div></section>`, bluetooth: `<h1 class="text-2xl font-semibold mb-5">Bluetooth</h1><section class="bg-white/10 rounded-xl overflow-hidden mb-4"><div class="settings-row"><strong>Bluetooth</strong><div class="mac-toggle on" onclick="toggleSetting(this, 'Bluetooth')"></div></div></section><div class="text-xs text-white/50 uppercase mb-2 ml-2">My Devices</div><section class="bg-white/10 rounded-xl overflow-hidden"><div class="settings-row"><span>AirPods Pro</span><span class="text-xs text-emerald-400">Connected · 86%</span></div><div class="settings-row"><span>Magic Mouse</span><span class="text-xs text-white/50">Not Connected</span></div></section>`, sound: `<h1 class="text-2xl font-semibold mb-5">Sound</h1><section class="bg-white/10 rounded-xl p-4 space-y-5"><div><div class="flex justify-between mb-2"><span>Output volume</span><span class="text-white/40 text-xs">MacBook Pro Speakers</span></div><div class="flex items-center gap-3"><i class="fa-solid fa-volume-low"></i><input oninput="updateVolume(this.value)" type="range" min="0" max="100" value="72" class="flex-1"><i class="fa-solid fa-volume-high"></i></div></div><div class="settings-row px-0"><span>Play sound on startup</span><div class="mac-toggle on" onclick="toggleSetting(this, 'Startup sound')"></div></div><div class="settings-row px-0"><span>Show sound in menu bar</span><div class="mac-toggle" onclick="toggleSetting(this, 'Menu bar sound')"></div></div></section>`, wallpaper: `<h1 class="text-2xl font-semibold mb-5">Wallpaper</h1><div class="text-xs text-white/50 uppercase mb-2 ml-1">Built-in</div><div class="grid grid-cols-2 gap-4 mb-6"><button onclick="setWallpaper('tahoe')" class="h-28 rounded-2xl bg-gradient-to-br from-sky-400 via-blue-700 to-violet-800 ring-2 ring-transparent hover:ring-[#0a84ff]"><span class="text-xs bg-black/40 px-2 py-1 rounded-md">Tahoe</span></button><button onclick="setWallpaper('sequoia')" class="h-28 rounded-2xl bg-gradient-to-br from-orange-300 via-pink-600 to-indigo-900 ring-2 ring-transparent hover:ring-[#0a84ff]"><span class="text-xs bg-black/40 px-2 py-1 rounded-md">Sequoia</span></button><button onclick="setWallpaper('sonoma')" class="h-28 rounded-2xl bg-gradient-to-br from-emerald-400 via-cyan-700 to-slate-950 ring-2 ring-transparent hover:ring-[#0a84ff]"><span class="text-xs bg-black/40 px-2 py-1 rounded-md">Sonoma</span></button><button onclick="setWallpaper('midnight')" class="h-28 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-black ring-2 ring-transparent hover:ring-[#0a84ff]"><span class="text-xs bg-black/40 px-2 py-1 rounded-md">Midnight</span></button></div><div class="text-xs text-white/50 uppercase mb-2 ml-1">From Photos</div><div id="wallpaper-user-photos" class="grid grid-cols-3 gap-3 mb-6">${renderWallpaperUserPhotosHTML()}</div><div class="text-xs text-white/50 uppercase mb-2 ml-1">Custom</div><section class="bg-white/10 rounded-xl p-4"><p class="text-sm text-white/70 mb-3">Choose any image from your computer to use as the desktop wallpaper.</p><input type="file" accept="image/*" class="hidden wallpaper-file-input" onchange="setCustomWallpaperFromFile(this)"><button onclick="this.previousElementSibling.click()" class="w-full bg-[#0a84ff] hover:bg-[#0077ed] text-white font-medium py-2.5 rounded-xl text-sm transition-colors"><i class="fa-solid fa-image mr-2"></i> Choose Photo…</button></section>`, privacy: `<h1 class="text-2xl font-semibold mb-5">Privacy &amp; Security</h1><section class="bg-white/10 rounded-xl overflow-hidden"><div class="settings-row"><span>Location Services</span><div class="mac-toggle on" onclick="toggleSetting(this, 'Location Services')"></div></div><div class="settings-row"><span>Camera</span><i class="fa-solid fa-chevron-right text-white/30"></i></div><div class="settings-row"><span>Microphone</span><i class="fa-solid fa-chevron-right text-white/30"></i></div><div class="settings-row"><span>Screen &amp; System Audio Recording</span><i class="fa-solid fa-chevron-right text-white/30"></i></div></section>` }; if (panes[pane]) return panes[pane]; const labels = { network: 'Network', battery: 'Battery', accessibility: 'Accessibility', siri: 'Apple Intelligence & Siri', desktop: 'Desktop & Dock', displays: 'Displays', menubar: 'Menu Bar', spotlight: 'Spotlight', notifications: 'Notifications', focus: 'Focus', screentime: 'Screen Time', lock: 'Lock Screen', touchid: 'Touch ID & Password', users: 'Users & Groups' }; const label = labels[pane] || 'System Settings'; return `<h1 class="text-3xl font-semibold mb-6">${label}</h1><section class="bg-white/10 rounded-xl overflow-hidden"><div class="settings-row"><span>Enable ${label}</span><div class="mac-toggle on" onclick="toggleSetting(this, '${label}')"></div></div><div class="settings-row"><span>Show in Menu Bar</span><div class="mac-toggle" onclick="toggleSetting(this, 'Menu Bar')"></div></div><div class="settings-row"><span>Options…</span><i class="fa-solid fa-chevron-right text-white/25"></i></div></section>`; }
+        function selectSettingsPane(pane, nav) { const detail = nav.closest('.macos-window').querySelector('#settings-detail'); detail.innerHTML = settingsPaneHTML(pane); nav.parentElement.querySelectorAll('.settings-nav').forEach(item => { item.classList.remove('bg-[#0a84ff]', 'bg-[#0a67d8]'); }); nav.classList.add('bg-[#0a67d8]'); }
+        function filterSettings(query) { document.querySelectorAll('.settings-nav').forEach(item => { item.style.display = item.textContent.toLowerCase().includes(query.toLowerCase()) ? 'flex' : 'none'; }); }
+        function openAccountSettings(card) { const profile = getSetupProfile(); if (!profile.icloudName) { setupState.step = 3; showSetupAssistant(false); return; } const detail = card.closest('.macos-window').querySelector('#settings-detail'); detail.innerHTML = `<div class="text-center pt-8"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-sky-300 to-blue-600 grid place-items-center text-3xl font-semibold">${profile.icloudName.split(/\s+/).map(part => part[0]).join('').slice(0,2).toUpperCase()}</div><h1 class="text-3xl font-semibold mt-4">${profile.icloudName}</h1><p class="text-white/50">Apple Account · iCloud</p><section class="bg-white/10 rounded-xl overflow-hidden mt-8 text-left">${settingLinkRow('fa-cloud','iCloud','#0a84ff')}${settingLinkRow('fa-lock','Sign-In & Security','#34c759')}${settingLinkRow('fa-credit-card','Payment & Shipping','#8e8e93')}</section><button onclick="signOutAppleAccount()" class="mt-6 text-red-400 bg-white/10 rounded-lg px-5 py-2">Sign Out…</button></div>`; }
+        function signOutAppleAccount() { const profile = getSetupProfile(); profile.icloudName = ''; localStorage.setItem('macosSetupProfile', JSON.stringify(profile)); document.querySelectorAll('#settings-account-card').forEach(card => card.innerHTML = settingsAccountCardHTML()); showNotification('Signed out of Apple Account'); const detail = document.querySelector('[data-app="settings"] #settings-detail'); if (detail) detail.innerHTML = settingsPaneHTML('general'); }
+        let setupState = { step: 0, language: 'English', region: 'Australia', appearance: 'dark', icloudName: '' };
+        function showSetupAssistant(startAtBeginning = true) { document.getElementById('setup-assistant')?.remove(); if (startAtBeginning) setupState.step = 0; const assistant = document.createElement('div'); assistant.id = 'setup-assistant'; assistant.className = 'fixed inset-0 z-[1000] bg-gradient-to-br from-[#08111d] via-[#101b2a] to-[#05080f] text-white grid place-items-center'; assistant.innerHTML = '<div id="setup-card"></div>'; document.body.appendChild(assistant); renderSetupStep(); }
+        function setupProgressHTML() { return `<div class="flex justify-center gap-2 mt-6">${[0,1,2,3].map(index => `<span class="w-2 h-2 rounded-full ${index === setupState.step ? 'bg-[#0a84ff]' : 'bg-white/20'}"></span>`).join('')}</div>`; }
+        function renderSetupStep() { const card = document.getElementById('setup-card'); if (!card) return; const shell = content => `<div class="w-[680px] max-w-[92vw] glass rounded-[28px] p-10 shadow-2xl text-center">${content}${setupProgressHTML()}</div>`; const steps = [shell(`<div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-sky-300 to-blue-700 grid place-items-center mb-5 shadow-xl"><i class="fa-solid fa-language text-4xl"></i></div><h1 class="text-3xl font-semibold">Choose Your Language</h1><p class="text-white/55 mt-2 mb-7">Select the language you want to use on this Mac.</p><select onchange="setupState.language=this.value" class="w-full max-w-sm bg-white/10 border border-white/15 rounded-xl px-4 py-3 outline-none text-center"><option>English</option><option>Español</option><option>Français</option><option>Deutsch</option><option>日本語</option><option>简体中文</option></select><div><button onclick="nextSetupStep()" class="mt-8 bg-[#0a84ff] hover:bg-[#0077ed] px-8 py-2.5 rounded-xl font-medium">Continue</button></div>`), shell(`<div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-cyan-300 to-blue-700 grid place-items-center mb-5 shadow-xl"><i class="fa-solid fa-earth-oceania text-4xl"></i></div><h1 class="text-3xl font-semibold">Select Your Country or Region</h1><p class="text-white/55 mt-2 mb-7">This sets date, time, currency and number formats.</p><select onchange="setupState.region=this.value" class="w-full max-w-sm bg-white/10 border border-white/15 rounded-xl px-4 py-3 outline-none text-center"><option>Australia</option><option>United States</option><option>United Kingdom</option><option>Canada</option><option>New Zealand</option><option>Japan</option></select><div class="flex justify-center gap-3 mt-8"><button onclick="previousSetupStep()" class="bg-white/10 px-7 py-2.5 rounded-xl">Back</button><button onclick="nextSetupStep()" class="bg-[#0a84ff] px-8 py-2.5 rounded-xl">Continue</button></div>`), shell(`<div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-zinc-200 to-zinc-700 grid place-items-center mb-5 shadow-xl"><i class="fa-solid fa-circle-half-stroke text-4xl"></i></div><h1 class="text-3xl font-semibold">Choose Your Look</h1><p class="text-white/55 mt-2 mb-7">You can change this later in System Settings.</p><div class="grid grid-cols-3 gap-4"><button onclick="chooseSetupAppearance('light',this)" class="setup-look rounded-2xl p-2 border-2 border-transparent"><div class="h-28 rounded-xl bg-gradient-to-b from-sky-100 to-white"></div><div class="mt-2">Light</div></button><button onclick="chooseSetupAppearance('dark',this)" class="setup-look rounded-2xl p-2 border-2 border-[#0a84ff]"><div class="h-28 rounded-xl bg-gradient-to-b from-zinc-700 to-black"></div><div class="mt-2">Dark</div></button><button onclick="chooseSetupAppearance('auto',this)" class="setup-look rounded-2xl p-2 border-2 border-transparent"><div class="h-28 rounded-xl flex overflow-hidden"><span class="w-1/2 bg-white"></span><span class="w-1/2 bg-zinc-900"></span></div><div class="mt-2">Auto</div></button></div><div class="flex justify-center gap-3 mt-7"><button onclick="previousSetupStep()" class="bg-white/10 px-7 py-2.5 rounded-xl">Back</button><button onclick="nextSetupStep()" class="bg-[#0a84ff] px-8 py-2.5 rounded-xl">Continue</button></div>`), shell(`<i class="fa-brands fa-apple text-7xl mb-5"></i><h1 class="text-3xl font-semibold">Apple Account</h1><p class="text-white/55 mt-2 mb-7">Enter the name you want shown for iCloud and in System Settings.</p><input id="setup-icloud-name" value="${setupState.icloudName}" oninput="setupState.icloudName=this.value" placeholder="Your name" class="w-full max-w-sm bg-white/10 border border-white/15 rounded-xl px-4 py-3 outline-none text-center focus:border-[#0a84ff]"><div id="setup-name-error" class="text-red-400 text-xs h-5 mt-2"></div><div class="flex flex-col items-center gap-3 mt-5"><button onclick="finishSetup(false)" class="bg-[#0a84ff] px-8 py-2.5 rounded-xl min-w-52">Continue with iCloud</button><button onclick="finishSetup(true)" class="text-[#4da3ff] hover:underline text-sm">Set Up Later — No iCloud</button><button onclick="previousSetupStep()" class="text-white/50 text-sm">Back</button></div>`)]; card.innerHTML = steps[setupState.step]; }
+        function nextSetupStep() { setupState.step = Math.min(3, setupState.step + 1); renderSetupStep(); }
+        function previousSetupStep() { setupState.step = Math.max(0, setupState.step - 1); renderSetupStep(); }
+        function chooseSetupAppearance(mode, button) { setupState.appearance = mode; document.querySelectorAll('.setup-look').forEach(item => item.classList.remove('border-[#0a84ff]')); button.classList.add('border-[#0a84ff]'); }
+        function finishSetup(skipICloud) { if (!skipICloud && !setupState.icloudName.trim()) { document.getElementById('setup-name-error').textContent = 'Enter a name, or choose Set Up Later.'; return; } const profile = { setupComplete: true, language: setupState.language, region: setupState.region, appearance: setupState.appearance, icloudName: skipICloud ? '' : setupState.icloudName.trim() }; localStorage.setItem('macosSetupProfile', JSON.stringify(profile)); document.body.classList.toggle('light-mode', profile.appearance === 'light'); document.getElementById('setup-assistant')?.remove(); document.querySelectorAll('#settings-account-card').forEach(card => card.innerHTML = settingsAccountCardHTML()); showNotification(skipICloud ? 'Setup complete — No Apple Account' : `Welcome, ${profile.icloudName}`); }
+        function restartSetupAssistant() { localStorage.removeItem('macosSetupProfile'); setupState = { step: 0, language: 'English', region: 'Australia', appearance: 'dark', icloudName: '' }; showSetupAssistant(true); }
+        function toggleSetting(toggle, label) { toggle.classList.toggle('on'); showNotification(`${label} ${toggle.classList.contains('on') ? 'enabled' : 'disabled'}`); }
+        function setAppearance(mode) { document.body.classList.toggle('light-mode', mode === 'light'); showNotification(`Appearance set to ${mode.charAt(0).toUpperCase() + mode.slice(1)}`); }
+        function updateVolume(value) { showNotification(`Volume: ${value}%`); }
+        function setWallpaper(name) { const desktop = document.getElementById('desktop'); const wallpapers = { tahoe: "url('https://media.512pixels.net/wp-content/uploads/2025/06/26-Tahoe-Light-6K-thumb.jpeg?v=4')", sequoia: 'linear-gradient(135deg, #ffb36b, #ba277d 45%, #1e1b4b)', sonoma: 'linear-gradient(135deg, #34d399, #087ca7 45%, #0f172a)', midnight: 'linear-gradient(135deg, #172554, #1e1b4b 45%, #030712)' }; desktop.style.setProperty('background-image', wallpapers[name], 'important'); desktop.style.setProperty('background-size', 'cover', 'important'); desktop.style.setProperty('background-position', 'center', 'important'); showNotification(`${name.charAt(0).toUpperCase() + name.slice(1)} wallpaper applied`); }
+
+        let safariTabCounter = 1;
+        function getSafariRoot(el) { return el?.closest?.('[data-safari-root]') || el?.closest?.('.macos-window')?.querySelector('[data-safari-root]'); }
+        function getSafariState(root) { if (!root._safariState) { root._safariState = { tabs: [{ id: 'tab_1', title: 'Google', url: 'https://www.google.com/webhp?igu=1', displayUrl: 'https://www.google.com' }], activeId: 'tab_1' }; } return root._safariState; }
+        function safariNormalizeUrl(raw) { let url = (raw || '').trim(); if (!url) return null; if (!/^https?:\/\//i.test(url) && !url.includes('.') && !url.startsWith('about:')) { url = 'https://www.google.com/search?q=' + encodeURIComponent(url) + '&igu=1'; } else if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; } if (url === 'https://www.google.com' || url === 'https://google.com') { url = 'https://www.google.com/webhp?igu=1'; } return url; }
+        function safariTitleFromUrl(url) { try { const u = new URL(url.replace('webhp?igu=1', '').replace('?igu=1', '').replace('&igu=1', '')); if (u.hostname.includes('google.') && u.pathname.includes('/search')) { return u.searchParams.get('q') || 'Google Search'; } return u.hostname.replace(/^www\./, '') || 'New Tab'; } catch { return 'New Tab'; } }
+        function safariRenderTabs(root) { const state = getSafariState(root); const bar = root.querySelector('#safari-tab-bar'); if (!bar) return; const addBtn = bar.querySelector('button[onclick*="safariAddTab"]'); bar.querySelectorAll('.safari-tab').forEach(t => t.remove()); state.tabs.forEach(tab => { const el = document.createElement('div'); el.className = `safari-tab flex items-center gap-2 max-w-[180px] min-w-[120px] px-3 py-1.5 rounded-t-lg text-xs cursor-pointer group ${tab.id === state.activeId ? 'active bg-white/15' : 'bg-white/5 hover:bg-white/10'}`; el.dataset.tabId = tab.id; el.onclick = function() { safariSwitchTab(this); }; el.innerHTML = `<i class="fa-solid fa-globe text-[10px] opacity-70"></i><span class="tab-title truncate flex-1">${tab.title.replace(/</g, '&lt;')}</span><button onclick="event.stopPropagation(); safariCloseTab(this)" class="opacity-0 group-hover:opacity-100 w-4 h-4 rounded-full hover:bg-white/20 flex items-center justify-center text-[10px]">×</button>`; bar.insertBefore(el, addBtn); }); }
+        function safariSwitchTab(tabEl) { const root = getSafariRoot(tabEl); if (!root) return; const state = getSafariState(root); const id = tabEl.dataset.tabId; const tab = state.tabs.find(t => t.id === id); if (!tab) return; state.activeId = id; const input = root.querySelector('.safari-url'); const frame = root.querySelector('.safari-frame'); if (input) input.value = tab.displayUrl || tab.url; if (frame && frame.src !== tab.url) frame.src = tab.url; safariRenderTabs(root); }
+        function safariAddTab(btn) { const root = getSafariRoot(btn); if (!root) return; const state = getSafariState(root); safariTabCounter++; const id = 'tab_' + safariTabCounter; const newTab = { id, title: 'New Tab', url: 'https://www.google.com/webhp?igu=1', displayUrl: 'https://www.google.com' }; state.tabs.push(newTab); state.activeId = id; const input = root.querySelector('.safari-url'); const frame = root.querySelector('.safari-frame'); if (input) input.value = newTab.displayUrl; if (frame) frame.src = newTab.url; safariRenderTabs(root); if (input) input.focus(); }
+        function safariCloseTab(btn) { const tabEl = btn.closest('.safari-tab'); const root = getSafariRoot(btn); if (!root || !tabEl) return; const state = getSafariState(root); const id = tabEl.dataset.tabId; if (state.tabs.length <= 1) { state.tabs[0] = { id: state.tabs[0].id, title: 'Google', url: 'https://www.google.com/webhp?igu=1', displayUrl: 'https://www.google.com' }; state.activeId = state.tabs[0].id; const input = root.querySelector('.safari-url'); const frame = root.querySelector('.safari-frame'); if (input) input.value = 'https://www.google.com'; if (frame) frame.src = state.tabs[0].url; safariRenderTabs(root); return; } const idx = state.tabs.findIndex(t => t.id === id); state.tabs.splice(idx, 1); if (state.activeId === id) { const next = state.tabs[Math.max(0, idx - 1)]; state.activeId = next.id; const input = root.querySelector('.safari-url'); const frame = root.querySelector('.safari-frame'); if (input) input.value = next.displayUrl || next.url; if (frame) frame.src = next.url; } safariRenderTabs(root); }
+        function safariNavigate(inputOrEl) { const root = getSafariRoot(inputOrEl) || document.querySelector('[data-safari-root]'); if (!root) return; const input = root.querySelector('.safari-url'); const frame = root.querySelector('.safari-frame'); if (!input || !frame) return; const url = safariNormalizeUrl(input.value); if (!url) return; const displayUrl = url.replace('&igu=1', '').replace('?igu=1', '').replace('/webhp', ''); input.value = displayUrl.startsWith('http') ? displayUrl : url; try { frame.src = url; } catch (e) { showNotification('Could not load that page'); return; } const state = getSafariState(root); const tab = state.tabs.find(t => t.id === state.activeId); if (tab) { tab.url = url; tab.displayUrl = input.value; tab.title = safariTitleFromUrl(url); } safariRenderTabs(root); }
+        function safariReload(btn) { const root = getSafariRoot(btn); const frame = root?.querySelector('.safari-frame'); if (frame) frame.src = frame.src; }
+        function safariGoBack(btn) { const root = getSafariRoot(btn); const frame = root?.querySelector('.safari-frame'); try { frame?.contentWindow?.history?.back(); } catch (e) { showNotification('Back is limited inside this preview'); } }
+        function safariGoForward(btn) { const root = getSafariRoot(btn); const frame = root?.querySelector('.safari-frame'); try { frame?.contentWindow?.history?.forward(); } catch (e) { showNotification('Forward is limited inside this preview'); } }
+
+        let currentMenu = null;
+        function closeAllMenus() { if (currentMenu) { currentMenu.remove(); currentMenu = null; } }
+        function showAppleMenu() { if (currentMenu && currentMenu.dataset.menuType === 'apple') { closeAllMenus(); return; } closeAllMenus(); const menu = document.createElement('div'); menu.dataset.menuType = 'apple'; menu.className = `absolute top-9 left-3 w-64 glass rounded-2xl py-1.5 text-sm z-[300] shadow-2xl`; menu.innerHTML = `<div class="px-4 py-2 hover:bg-white/10 cursor-pointer flex items-center gap-x-3" onclick="showAboutMac(); closeAllMenus()"><i class="fa-solid fa-info-circle w-4"></i><span>About This Mac</span></div><div class="h-px bg-white/10 my-1 mx-2"></div><div class="px-4 py-2 hover:bg-white/10 cursor-pointer flex items-center gap-x-3" onclick="openApp('settings'); closeAllMenus()"><i class="fa-solid fa-cog w-4"></i><span>System Settings...</span></div><div class="px-4 py-2 hover:bg-white/10 cursor-pointer flex items-center gap-x-3" onclick="openApp('appstore'); closeAllMenus()"><i class="fa-solid fa-store w-4"></i><span>App Store...</span></div><div class="h-px bg-white/10 my-1 mx-2"></div><div class="px-4 py-2 hover:bg-white/10 cursor-pointer flex items-center gap-x-3 text-red-400" onclick="if(confirm('Shut down your Mac?')) { showNotification('Shutting down...'); closeAllMenus() }"><i class="fa-solid fa-power-off w-4"></i><span>Shut Down...</span></div>`; document.body.appendChild(menu); currentMenu = menu; setTimeout(() => { document.addEventListener('click', function handler(ev) { if (!menu.contains(ev.target) && !ev.target.closest('[onclick*="showAppleMenu"]')) { closeAllMenus(); document.removeEventListener('click', handler); } }, { once: true }); }, 10); }
+        function showMenuDropdown(element, menuType) { if (currentMenu && currentMenu.dataset.menuType === menuType) { closeAllMenus(); return; } closeAllMenus(); const rect = element.getBoundingClientRect(); const menu = document.createElement('div'); menu.dataset.menuType = menuType; menu.className = `absolute glass rounded-2xl py-1.5 text-sm z-[300] min-w-[180px]`; menu.style.left = `${rect.left}px`; menu.style.top = `${rect.bottom + 6}px`; let items = ''; switch(menuType) { case 'finder': items = `<div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">About Finder</div><div class="h-px bg-white/10 my-1"></div><div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">Preferences...</div><div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">Empty Trash...</div>`; break; case 'file': items = `<div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">New Finder Window</div><div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">New Folder</div><div class="h-px bg-white/10 my-1"></div><div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">Close Window</div>`; break; case 'edit': items = `<div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">Undo</div><div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">Redo</div><div class="h-px bg-white/10 my-1"></div><div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">Cut</div><div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">Copy</div><div class="px-4 py-[5px] hover:bg-white/10 cursor-pointer">Paste</div>`; break; default: items = `<div class="px-4 py-2 text-white/60 text-xs">Not finished</div>`; } menu.innerHTML = items; document.body.appendChild(menu); currentMenu = menu; setTimeout(() => { document.addEventListener('click', function handler(ev) { if (!menu.contains(ev.target) && ev.target !== element) { closeAllMenus(); document.removeEventListener('click', handler); } }, { once: true }); }, 10); }
+        function showAboutMac() { createWindow('About This Mac', `<div class="text-center py-4"><div class="w-24 h-24 mx-auto rounded-[24px] bg-gradient-to-br from-slate-100 via-slate-400 to-slate-900 p-[3px] shadow-2xl mb-4"><div class="w-full h-full rounded-[21px] bg-gradient-to-br from-[#334155] to-[#020617] grid place-items-center"><i class="fa-brands fa-apple text-5xl"></i></div></div><h2 class="text-2xl font-semibold">macOS Tahoe</h2><p class="text-white/50 mt-1">Version 26.0</p><div class="mt-5 bg-white/10 rounded-xl p-4 text-left text-xs space-y-2"><div class="flex justify-between"><span class="text-white/50">Mac</span><span>MacBook Pro</span></div><div class="flex justify-between"><span class="text-white/50">Chip</span><span>Apple M4 Pro</span></div><div class="flex justify-between"><span class="text-white/50">Memory</span><span>24 GB</span></div><div class="flex justify-between"><span class="text-white/50">Serial number</span><span>C02LIQUIDGLASS</span></div></div><button onclick="openApp('settings'); closeWindow(this)" class="mt-5 bg-[#0a84ff] px-5 py-2 rounded-lg text-xs">More Info…</button></div>`, '', 420); }
+        function showSpotlight() { document.getElementById('spotlight-overlay')?.remove(); const overlay = document.createElement('div'); overlay.id = 'spotlight-overlay'; overlay.className = 'fixed inset-0 z-[450] flex justify-center pt-[16vh] bg-black/10'; overlay.innerHTML = `<div class="w-[620px] h-fit glass rounded-2xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()"><div class="flex items-center gap-4 px-5 py-4"><i class="fa-solid fa-magnifying-glass text-2xl text-white/50"></i><input id="spotlight-input" oninput="spotlightSearch(this.value)" onkeydown="if(event.key==='Enter') launchSpotlightResult()" autocomplete="off" placeholder="Spotlight Search" class="flex-1 bg-transparent outline-none text-2xl placeholder:text-white/40"></div><div id="spotlight-results" class="hidden border-t border-white/10 p-2"></div><div class="border-t border-white/10 px-5 py-2 text-[10px] text-white/40">Press Return to open · Esc to close</div></div>`; overlay.onclick = () => overlay.remove(); document.body.appendChild(overlay); overlay.querySelector('input').focus(); }
+        function spotlightSearch(query) { const results = document.getElementById('spotlight-results'); if (!query.trim()) { results.classList.add('hidden'); return; } const installedNames = appStoreCatalog.filter(app => getInstalledApps().includes(app.id)).map(app => app.name); const apps = ['Finder', 'Safari', 'Messages', 'Photos', 'App Store', 'System Settings', 'Terminal', 'iPhone Mirroring', 'Launchpad', 'Games', 'Tic-Tac-Toe', 'Memory', ...installedNames]; const match = apps.find(app => app.toLowerCase().includes(query.toLowerCase())) || 'Search the Web'; const appIds = { 'App Store': 'appstore', 'System Settings': 'settings', 'iPhone Mirroring': 'iphone', 'Tic-Tac-Toe': 'tictactoe', 'Memory': 'memory', 'Search the Web': 'search' }; results.dataset.app = appIds[match] || appStoreCatalog.find(app => app.name === match)?.id || match.toLowerCase().split(' ')[0]; results.innerHTML = `<div class="bg-[#0a84ff] rounded-xl px-4 py-3 flex items-center justify-between"><span><i class="fa-solid fa-arrow-right mr-3"></i>${match}</span><span class="text-xs text-white/70">Top Hit</span></div>`; results.classList.remove('hidden'); }
+        function launchSpotlightResult() { const result = document.getElementById('spotlight-results'); if (!result || result.classList.contains('hidden')) return; if (result.dataset.app === 'search') openApp('safari'); else openApp(result.dataset.app); document.getElementById('spotlight-overlay')?.remove(); }
+        function showDesktopContextMenu(e) { e.preventDefault(); document.querySelector('.desktop-context-menu')?.remove(); const menu = document.createElement('div'); menu.className = 'desktop-context-menu fixed w-56 glass rounded-xl py-1.5 text-sm z-[400] shadow-2xl'; menu.style.left = `${Math.min(e.clientX, window.innerWidth - 240)}px`; menu.style.top = `${Math.min(e.clientY, window.innerHeight - 250)}px`; menu.innerHTML = `<div onclick="createDesktopFolder(); this.parentElement.remove()" class="px-4 py-1.5 hover:bg-[#0a84ff] cursor-pointer">New Folder</div><div class="h-px bg-white/10 my-1"></div><div onclick="showNotification('Desktop items tidied')" class="px-4 py-1.5 hover:bg-[#0a84ff] cursor-pointer">Clean Up</div><div onclick="showNotification('Sorted by Name')" class="px-4 py-1.5 hover:bg-[#0a84ff] cursor-pointer">Sort By <span class="float-right">›</span></div><div class="h-px bg-white/10 my-1"></div><div onclick="openApp('settings'); this.parentElement.remove()" class="px-4 py-1.5 hover:bg-[#0a84ff] cursor-pointer">Change Wallpaper…</div>`; document.body.appendChild(menu); setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10); }
+        function createDesktopFolder() { const grid = document.querySelector('#desktop .grid'); const folder = document.createElement('div'); folder.className = 'desktop-icon flex flex-col items-center gap-y-1.5 p-2 cursor-pointer'; folder.innerHTML = '<div class="w-12 h-12 flex items-center justify-center text-5xl drop-shadow-lg">📁</div><span contenteditable="true" class="text-white text-xs font-medium bg-[#0a84ff] px-1 rounded outline-none">untitled folder</span>'; grid.appendChild(folder); folder.querySelector('span').focus(); }
+        function showControlCenter() { const panel = document.createElement('div'); panel.className = `absolute top-12 right-3 w-80 glass rounded-3xl p-5 z-[300]`; panel.innerHTML = `<div class="text-xs font-semibold tracking-widest text-white/60 mb-4 px-1">CONTROL CENTER</div><div class="grid grid-cols-2 gap-3"><div class="bg-white/10 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-white/15 transition-colors" onclick="this.classList.toggle('opacity-50'); showNotification('Wi-Fi toggled')"><i class="fa-solid fa-wifi text-2xl mb-2 text-[#007aff]"></i><div class="text-xs">Wi-Fi</div><div class="text-emerald-400 text-[10px]">Connected</div></div><div class="bg-white/10 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-white/15 transition-colors" onclick="this.classList.toggle('opacity-50'); showNotification('Bluetooth toggled')"><i class="fa-brands fa-bluetooth-b text-2xl mb-2"></i><div class="text-xs">Bluetooth</div><div class="text-emerald-400 text-[10px]">On</div></div><div class="bg-white/10 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-white/15 transition-colors col-span-2" onclick="this.classList.toggle('ring-1'); showNotification('Focus mode toggled')"><div class="flex items-center gap-x-2"><i class="fa-solid fa-moon text-xl"></i><div><div class="text-sm">Focus</div><div class="text-[10px] text-white/50">Do Not Disturb • On</div></div></div></div></div><div class="mt-3 bg-white/10 rounded-2xl p-3"><div class="flex items-center gap-3 text-xs mb-2"><i class="fa-solid fa-sun"></i><span>Display</span></div><input type="range" min="20" max="100" value="82" class="w-full"></div><div class="mt-3 bg-white/10 rounded-2xl p-3"><div class="flex items-center gap-3 text-xs mb-2"><i class="fa-solid fa-volume-high"></i><span>Sound</span></div><input type="range" min="0" max="100" value="72" class="w-full"></div><div class="mt-4 text-[10px] text-center text-white/40">Liquid Glass Control Center</div>`; document.body.appendChild(panel); setTimeout(() => { document.addEventListener('click', function handler(ev) { if (!panel.contains(ev.target)) { panel.remove(); document.removeEventListener('click', handler); } }, { once: true }); }, 10); }
+        function showNotification(message) { const toast = document.createElement('div'); const existing = document.querySelectorAll('.mac-notification').length; toast.className = `mac-notification fixed right-4 glass px-4 py-3 rounded-2xl flex items-center gap-x-3 text-sm z-[500] shadow-xl w-80`; toast.style.top = `${52 + existing * 74}px`; toast.innerHTML = `<div class="flex items-center gap-x-3"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-[#0a84ff] grid place-items-center flex-shrink-0"><i class="fa-solid fa-check text-white"></i></div><div><div class="font-semibold text-xs">macOS</div><span class="text-xs text-white/70">${message}</span></div></div>`; document.body.appendChild(toast); setTimeout(() => { toast.style.transition = 'all 0.25s ease'; toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; setTimeout(() => toast.remove(), 200); }, 2600); }
+        function addKeyboardHints() {
+            document.addEventListener('keydown', function(e) {
+                if (e.metaKey && e.code === 'Space') { e.preventDefault(); showSpotlight(); return; }
+                if (e.metaKey && e.key === "/") { e.preventDefault(); const finder = document.querySelector('[data-app="finder"]'); if (finder) { highestZ++; finder.style.zIndex = highestZ; } else { openApp('finder'); } }
+                if (e.key === "Escape") { const spotlight = document.getElementById('spotlight-overlay'); if (spotlight) { spotlight.remove(); return; } const windows = document.querySelectorAll('.macos-window'); if (windows.length > 0) { const last = windows[windows.length - 1]; last.style.transition = 'all 0.2s ease'; last.style.opacity = '0'; setTimeout(() => last.remove(), 150); } }
+            });
+            document.addEventListener('keypress', function(e) { if (e.key === "?") { const welcome = document.getElementById('welcome-window'); if (welcome) { welcome.style.transition = 'all 0.4s cubic-bezier(0.23,1,0.32,1)'; welcome.style.transform = 'scale(1.03)'; setTimeout(() => { if (welcome && welcome.parentNode) welcome.style.transform = 'scale(1)'; }, 300); } } });
+        }
+        function initMacOS() {
+            initTailwind(); updateClock(); addKeyboardHints();
+            const savedProfile = getSetupProfile();
+            if (savedProfile.appearance === 'light') document.body.classList.add('light-mode');
+            if (!savedProfile.setupComplete) setTimeout(() => showSetupAssistant(true), 450);
+            const appNames = { finder: 'Finder', safari: 'Safari', messages: 'Messages', photos: 'Photos', appstore: 'App Store', settings: 'System Settings', terminal: 'Terminal', snake: 'Snake', flappy: 'Flappy Bird', iphone: 'iPhone Mirroring', trash: 'Trash', launchpad: 'Launchpad', unblockedgames: 'Unblocked Games' };
+            document.querySelectorAll('.dock-icon').forEach(icon => { const app = icon.getAttribute('onclick')?.match(/openApp\('([^']+)'\)/)?.[1]; if (app) icon.dataset.label = appNames[app] || app; });
+            const desktop = document.getElementById('desktop'); desktop.addEventListener('contextmenu', event => { if (event.target.closest('.macos-window, .desktop-icon')) return; showDesktopContextMenu(event); });
+            const welcome = document.getElementById('welcome-window'); if (welcome) { welcome.style.zIndex = '50'; const titleBar = welcome.querySelector('.title-bar'); if (titleBar) titleBar.addEventListener('dblclick', () => maximizeWindow(titleBar)); }
+            console.log('%c[macOS Liquid Glass] Beautiful HTML recreation ready ✨', 'color:#64748b');
+        }
+        window.onload = initMacOS;
+    </script>
+</body>
+</html>
